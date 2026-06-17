@@ -1,0 +1,256 @@
+<div class="opera-curve-assignment">
+<div class="page-card">
+
+  <!-- Header ──────────────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <h1 class="page-title">Asignación de Curvas</h1>
+
+    <!-- Año / Semestre -->
+    <p-select
+      [options]="semesterOptions"
+      [ngModel]="currentSemester()"
+      (ngModelChange)="onSemesterChange($event)"
+      optionLabel="label"
+      optionValue="value"
+      styleClass="w-40"
+    />
+
+    <!-- Filtro estado -->
+    <opera-filters
+      [options]="statusFilterOptions()"
+      label=""
+      [multiple]="true"
+      placeholder="Filtrar estado"
+      (filterChange)="onStatusFilter($event)"
+    />
+
+    <p-button label="Nueva asignación" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <!-- Loading ─────────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="flex justify-center py-16">
+      <p-progressSpinner strokeWidth="4" />
+    </div>
+  } @else {
+
+  <!-- Timeline ─────────────────────────────────────────────────────────────── -->
+  <div class="timeline-wrapper">
+    <table class="timeline-table">
+      <thead>
+        <tr>
+          <th class="col-employee">Operario</th>
+          <th class="col-curve">Curva</th>
+          <th class="col-status">Estado</th>
+          @for (week of timelineWeeks(); track week) {
+            <th class="col-week">S{{ week }}</th>
+          }
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (emp of filteredEmployees(); track emp.employee_Code) {
+          <tr>
+            <td class="col-employee">
+              <div class="employee-name">{{ emp.employee_Name }}</div>
+              <div class="employee-code text-muted-color">{{ emp.employee_Code }}</div>
+            </td>
+            <td class="col-curve">
+              <span class="text-sm font-medium">{{ emp.curve_Code }}</span>
+              @if (emp.curve_Version) {
+                <span class="text-xs text-muted-color ml-1">v{{ emp.curve_Version }}</span>
+              }
+            </td>
+            <td class="col-status">
+              <span [class]="'status-badge ' + emp.statePeriod">{{ emp.statePeriod }}</span>
+            </td>
+            @for (week of timelineWeeks(); track week) {
+              @let weekData = getWeekForEmployee(emp, week);
+              <td
+                class="col-week"
+                [class.week-empty]="!weekData"
+                (contextmenu)="weekData && onWeekRightClick($event, emp, weekData)"
+              >
+                @if (weekData) {
+                  <div
+                    [class]="'week-cell ' + weekData.assignment_Progress"
+                    [title]="weekData.assignment_Progress + ' — ' + (weekData.real_Efficiency ?? 0) + '%'"
+                  >
+                    {{ weekData.real_Efficiency != null ? (weekData.real_Efficiency + '%') : '—' }}
+                  </div>
+                }
+              </td>
+            }
+            <td class="col-actions">
+              <div class="flex gap-1">
+                <p-button
+                  icon="pi pi-calendar"
+                  [text]="true" [rounded]="true" size="small"
+                  pTooltip="Gestionar semanas" tooltipPosition="top"
+                  (onClick)="openManageWeeks(emp)"
+                />
+                <p-button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [text]="true" [rounded]="true" size="small"
+                  pTooltip="Eliminar asignación" tooltipPosition="top"
+                  (onClick)="openDelete(emp)"
+                />
+              </div>
+            </td>
+          </tr>
+        }
+
+        @if (filteredEmployees().length === 0) {
+          <tr>
+            <td [attr.colspan]="3 + timelineWeeks().length + 1" class="text-center py-8 text-muted-color">
+              <i class="pi pi-inbox text-3xl mb-2 block opacity-30"></i>
+              Sin asignaciones en este período
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  } <!-- end @else -->
+
+</div><!-- /page-card -->
+
+<!-- ── Modales (fuera del card, dentro del componente) ──────────────────────── -->
+
+<!-- Modal: Nueva Asignación ─────────────────────────────────────────────────── -->
+<opera-dialog
+  [(visible)]="showAssignment"
+  header="Nueva Asignación de Curva"
+  width="480px"
+>
+  <form [formGroup]="assignmentForm" class="flex flex-col gap-3 py-2">
+    <div>
+      <label class="block text-sm font-medium mb-1">Código empleado *</label>
+      <input pInputText formControlName="employee_Code" class="w-full" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Código curva *</label>
+      <input pInputText formControlName="curve_Code" class="w-full" />
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="block text-sm font-medium mb-1">Semana inicial *</label>
+        <p-inputNumber formControlName="initialWeek" [min]="1" [max]="52" styleClass="w-full" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Nivel inicial *</label>
+        <p-inputNumber formControlName="lvlStart" [min]="1" styleClass="w-full" />
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Observaciones</label>
+      <textarea pTextarea formControlName="comments" class="w-full" rows="3"></textarea>
+    </div>
+  </form>
+
+  <div footer class="flex justify-end gap-2 pt-2">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showAssignment.set(false)" />
+    <p-button label="Crear asignación" [loading]="saving()" (onClick)="onSaveAssignment()" />
+  </div>
+</opera-dialog>
+
+<!-- Modal: Gestionar Semanas ────────────────────────────────────────────────── -->
+<opera-dialog
+  [(visible)]="showManageWeeks"
+  header="Semanas de la Asignación"
+  width="680px"
+>
+  @if (selectedEmployee) {
+    <div class="py-2">
+      <p class="text-sm mb-3">
+        <strong>{{ selectedEmployee.employee_Name }}</strong>
+        — Curva: {{ selectedEmployee.curve_Code }}
+      </p>
+      <div class="weeks-detail-grid">
+        @for (week of selectedEmployee.weeks; track week.codeId) {
+          <div class="week-detail-card">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-semibold text-sm">Semana {{ week.assignment_Week }}</span>
+              <span [class]="'status-badge ' + week.assignment_Progress" style="font-size:0.7rem">
+                {{ week.assignment_Progress }}
+              </span>
+            </div>
+            <div class="text-xs text-muted-color">
+              <span>Ef. base: {{ week.target_Efficiency }}%</span>
+              @if (week.real_Efficiency != null) {
+                <span class="ml-2">Ef. real: {{ week.real_Efficiency }}%</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <div footer class="flex justify-end pt-2">
+    <p-button label="Cerrar" severity="secondary" (onClick)="showManageWeeks.set(false)" />
+  </div>
+</opera-dialog>
+
+<!-- Modal: Comentario Instructor ────────────────────────────────────────────── -->
+<opera-dialog
+  [(visible)]="showComment"
+  header="Comentario del Instructor"
+  width="420px"
+>
+  <form [formGroup]="commentForm" class="py-2">
+    <label class="block text-sm font-medium mb-1">Comentario *</label>
+    <textarea pTextarea formControlName="comment" class="w-full" rows="4"></textarea>
+  </form>
+
+  <div footer class="flex justify-end gap-2 pt-2">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showComment.set(false)" />
+    <p-button label="Guardar comentario" [loading]="saving()" (onClick)="onSaveComment()" />
+  </div>
+</opera-dialog>
+
+<!-- Modal: Cambiar Estado Semana ────────────────────────────────────────────── -->
+<opera-dialog
+  [(visible)]="showChangeStatus"
+  header="Cambiar Estado de Semana"
+  width="360px"
+>
+  <div class="flex flex-col gap-2 py-2">
+    @for (status of weekStatusOptions; track status) {
+      <p-button
+        [label]="status"
+        severity="secondary"
+        styleClass="w-full justify-start"
+        [class]="'status-badge ' + status"
+        (onClick)="onChangeWeekStatus(status)"
+      />
+    }
+  </div>
+
+  <div footer class="flex justify-end pt-2">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showChangeStatus.set(false)" />
+  </div>
+</opera-dialog>
+
+<!-- Modal: Eliminar Asignación ──────────────────────────────────────────────── -->
+<opera-dialog
+  [(visible)]="showDelete"
+  header="Eliminar Asignación"
+  width="380px"
+>
+  @if (selectedEmployee) {
+    <p class="py-2">
+      ¿Eliminar la asignación de <strong>{{ selectedEmployee.employee_Name }}</strong>?
+      Esta acción no se puede deshacer.
+    </p>
+  }
+
+  <div footer class="flex justify-end gap-2 pt-2">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showDelete.set(false)" />
+    <p-button label="Eliminar" severity="danger" [loading]="saving()" (onClick)="onConfirmDelete()" />
+  </div>
+</opera-dialog>
+
+</div><!-- /opera-curve-assignment -->

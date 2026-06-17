@@ -1,0 +1,50 @@
+:host { display: block; width: 100%; }
+
+// ── Th content ────────────────────────────────────────────────────────────────
+.pw-th-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.pw-th-label { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+
+.pw-th-icons {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.pw-th-sort-icon { font-size: 0.65rem; }
+
+// ── Row ───────────────────────────────────────────────────────────────────────
+.pw-table-row { transition: background 0.12s; }
+
+// ── Boolean cell ─────────────────────────────────────────────────────────────
+.pw-check-true {
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.pw-check-false {
+  color: #d1d5db;
+  font-size: 0.875rem;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.pw-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 2.5rem 0;
+  color: #9ca3af;
+
+  i { font-size: 2rem; }
+  span { font-size: 0.875rem; font-weight: 500; }
+}

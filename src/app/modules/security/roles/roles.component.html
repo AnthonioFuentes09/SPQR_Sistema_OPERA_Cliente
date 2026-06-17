@@ -1,0 +1,104 @@
+<!-- Layout PAYWEB: page-card con header-bar -->
+<div class="page-card">
+
+  <div class="pw-page-header">
+    <div class="pw-page-title-block">
+      <div class="pw-page-icon" style="background:#fff3e0">
+        <i class="pi pi-id-card" style="color:#e65100"></i>
+      </div>
+      <div>
+        <h1 class="pw-page-title">Roles</h1>
+        <p class="pw-page-subtitle">Registros totales: {{ roles().length }}</p>
+      </div>
+    </div>
+
+    <div class="pw-page-search">
+      <i class="pi pi-search pw-search-icon"></i>
+      <input
+        type="text"
+        placeholder="Buscar registro..."
+        (input)="onSearch($event)"
+      />
+    </div>
+  </div>
+
+  <hr class="pw-section-divider" />
+
+  <div class="pw-actions-bar">
+    <button class="pw-btn-consult" type="button">
+      <i class="pi pi-eye"></i>
+      Consultar
+    </button>
+    <button class="pw-btn-new" type="button" (click)="openCreate()">
+      <i class="pi pi-plus-circle"></i>
+      Nuevo
+    </button>
+  </div>
+
+  <opera-table
+    [columns]="columns"
+    [data]="$any(filteredRoles())"
+    [loading]="loading()"
+    (editRow)="onEdit($any($event))"
+    (deleteRow)="onDelete($any($event))"
+  />
+
+</div>
+
+<!-- Drawer edición -->
+<opera-drawer
+  [(visible)]="drawerVisible"
+  [title]="isEditing() ? 'Editar Rol' : 'Nuevo Rol'"
+  [subtitle]="drawerSubtitle()"
+  width="480px"
+>
+  <form [formGroup]="form" class="space-y-4">
+
+    <div class="pw-form-section">
+      <div class="pw-section-header">
+        <i class="pi pi-id-card pw-section-icon"></i>
+        <h2>Información del Rol</h2>
+      </div>
+
+      <div class="pw-form-fields">
+        <div class="pw-form-group">
+          <label class="pw-form-label">Nombre del rol *</label>
+          <input
+            pInputText
+            formControlName="role_Name"
+            class="pw-form-input"
+            placeholder="Ej: Administrador"
+          />
+        </div>
+
+        <div class="pw-form-group">
+          <label class="pw-form-label">Descripción</label>
+          <textarea
+            pTextarea
+            formControlName="role_Description"
+            class="pw-form-input"
+            rows="3"
+            placeholder="Descripción opcional del rol"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+  </form>
+
+  <div footer class="pw-drawer-footer">
+    <button type="button" class="pw-btn-cancel" (click)="drawerVisible.set(false)">
+      <i class="pi pi-times"></i>
+      Cancelar
+    </button>
+    <button type="button" class="pw-btn-save" [disabled]="saving()" (click)="onSave()">
+      @if (saving()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="fa-solid fa-floppy-disk"></i>
+      }
+      Guardar
+    </button>
+  </div>
+
+</opera-drawer>

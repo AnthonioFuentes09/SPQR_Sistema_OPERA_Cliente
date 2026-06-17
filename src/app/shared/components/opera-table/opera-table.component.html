@@ -1,0 +1,125 @@
+<div class="pw-table-wrap">
+  <p-table
+    [value]="data()"
+    [columns]="columns()"
+    [loading]="loading()"
+    [paginator]="paginator()"
+    [rows]="rows()"
+    [rowsPerPageOptions]="rowsPerPageOptions()"
+    [scrollable]="scrollable()"
+    [scrollHeight]="scrollable() ? scrollHeight() : undefined"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="{totalRecords} registros"
+    (onRowClick)="rowClick.emit($any($event).data)"
+  >
+    <!-- ── Header ── -->
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        @for (col of columns; track col.field) {
+          <th
+            [style.width]="col.width ?? 'auto'"
+            [pSortableColumn]="col.sortable ? col.field : undefined"
+          >
+            <div class="pw-th-content">
+              <span class="pw-th-label">{{ col.header }}</span>
+              <span class="pw-th-icons">
+                @if (col.sortable) {
+                  <p-sortIcon [field]="col.field" />
+                } @else {
+                  <i class="pi pi-sort-alt pw-th-sort-icon"></i>
+                }
+              </span>
+            </div>
+          </th>
+        }
+      </tr>
+    </ng-template>
+
+    <!-- ── Body ── -->
+    <ng-template pTemplate="body" let-row let-columns="columns">
+      <tr class="pw-table-row">
+        @for (col of columns; track col.field) {
+          <td [style.width]="col.width ?? 'auto'">
+            @switch (col.type) {
+
+              @case ('badge') {
+                <span [class]="getBadgeClass(col, getValue(row, col.field))">
+                  {{ getValue(row, col.field) }}
+                </span>
+              }
+
+              @case ('boolean') {
+                @if (getValue(row, col.field)) {
+                  <i class="pi pi-check pw-check-true"></i>
+                } @else {
+                  <span class="pw-check-false">—</span>
+                }
+              }
+
+              @case ('number') {
+                {{ $any(getValue(row, col.field)) | number }}
+              }
+
+              @case ('actions') {
+                <div class="pw-btn-group">
+                  <!-- Acciones definidas explícitamente -->
+                  @if (col.actions && col.actions.length > 0) {
+                    @for (act of col.actions; track act.action) {
+                      <button
+                        type="button"
+                        class="pw-btn-table {{ getActionColorClass(act) }}"
+                        [style.background-color]="act.bgColor ?? null"
+                        [title]="act.tooltip ?? act.action"
+                        (click)="onActionClick(act, $any(row), $event)"
+                      >
+                        <i [class]="act.icon"></i>
+                      </button>
+                    }
+                  } @else {
+                    <!-- Acciones por defecto: editar + eliminar -->
+                    <button
+                      type="button"
+                      class="pw-btn-table pw-btn-primary"
+                      title="Editar"
+                      (click)="editRow.emit($any(row)); $event.stopPropagation()"
+                    >
+                      <i class="fa-solid fa-pencil"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="pw-btn-table pw-btn-danger"
+                      title="Eliminar"
+                      (click)="deleteRow.emit($any(row)); $event.stopPropagation()"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  }
+                </div>
+              }
+
+              @default {
+                {{ getValue(row, col.field) }}
+              }
+
+            }
+          </td>
+        }
+      </tr>
+    </ng-template>
+
+    <!-- ── Sin registros ── -->
+    <ng-template pTemplate="emptymessage" let-columns>
+      <tr>
+        <td [attr.colspan]="columns.length">
+          <div class="pw-empty-state">
+            <i class="pi pi-inbox"></i>
+            <span>No hay registros</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+</div>

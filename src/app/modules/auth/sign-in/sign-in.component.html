@@ -1,0 +1,93 @@
+<!-- Fondo gradiente gris claro exacto de PAYWEB -->
+<div class="sign-in-page">
+
+  <div class="sign-in-card">
+
+    <!-- Logo + título -->
+    <div class="sign-in-header">
+      <!-- Logo 4 círculos diamond como la pantalla de inicio -->
+      <div class="sign-in-logo-diamond">
+        <div class="sld-row sld-top"><div class="sld-circle sld-gray"></div></div>
+        <div class="sld-row sld-mid">
+          <div class="sld-circle sld-blue"></div>
+          <div class="sld-circle sld-orange"></div>
+        </div>
+        <div class="sld-row sld-bot"><div class="sld-circle sld-green"></div></div>
+      </div>
+      <h1 class="sign-in-title">ENTRENA</h1>
+      <h2 class="sign-in-subtitle">Iniciar Sesión</h2>
+    </div>
+
+    <!-- Formulario -->
+    <div class="sign-in-body">
+
+      @if (errorMsg()) {
+        <div class="sign-in-error">{{ errorMsg() }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="sign-in-form">
+
+        <!-- Código de empleado -->
+        <div class="form-field-wrap">
+          <label class="field-label">Código o usuario*</label>
+          <div class="field-input-wrap">
+            <i class="pi pi-user field-icon"></i>
+            <input
+              pInputText
+              id="employee_Code"
+              formControlName="employee_Code"
+              placeholder="Ingrese código o usuario"
+              autocomplete="username"
+              class="field-input"
+            />
+          </div>
+          @if (form.controls.employee_Code.touched && form.controls.employee_Code.hasError('required')) {
+            <small class="field-error">*El código de empleado es requerido.</small>
+          }
+        </div>
+
+        <!-- Contraseña -->
+        <div class="form-field-wrap">
+          <label class="field-label">Contraseña *</label>
+          <div class="field-input-wrap">
+            <i class="pi pi-lock field-icon"></i>
+            <p-password
+              inputId="password"
+              formControlName="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              placeholder="Ingrese su contraseña"
+              styleClass="w-full"
+              inputStyleClass="field-input field-input-password"
+              autocomplete="current-password"
+            />
+          </div>
+          @if (form.controls.password.touched && form.controls.password.hasError('required')) {
+            <small class="field-error">*La contraseña es requerida.</small>
+          }
+        </div>
+
+        <!-- Botón -->
+        <button
+          type="submit"
+          class="sign-in-btn"
+          [disabled]="isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="pw-spinner"></span>
+            <span>Ingresando...</span>
+          } @else {
+            <span>Iniciar Sesión</span>
+          }
+        </button>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="sign-in-footer">
+      <p>© 2025 TEAM OPERA. Todos los derechos reservados.</p>
+    </div>
+
+  </div>
+</div>

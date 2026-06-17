@@ -1,0 +1,38 @@
+<p-toast />
+
+<div class="opera-shell">
+
+  <!-- Sidebar estático (desktop) -->
+  @if (!isMobile()) {
+    <aside class="opera-sidebar" [class.collapsed]="!sidebarVisible()">
+      <opera-sidenav [items]="navItems()" [collapsed]="!sidebarVisible()" />
+    </aside>
+  }
+
+  <!-- Sidebar overlay (mobile) -->
+  @if (isMobile()) {
+    <p-sidebar
+      [visible]="sidebarVisible()"
+      (visibleChange)="sidebarVisible.set($event)"
+      [modal]="true"
+      [showCloseIcon]="true"
+      styleClass="opera-sidebar-overlay"
+    >
+      <opera-sidenav [items]="navItems()" [collapsed]="false" />
+    </p-sidebar>
+  }
+
+  <!-- Contenido principal -->
+  <div class="opera-content-wrapper" [class.sidebar-open]="sidebarVisible() && !isMobile()">
+
+    <opera-header
+      [sidebarVisible]="sidebarVisible()"
+      (toggleSidebar)="toggleSidebar()"
+    />
+
+    <main class="opera-main">
+      <router-outlet />
+    </main>
+
+  </div>
+</div>

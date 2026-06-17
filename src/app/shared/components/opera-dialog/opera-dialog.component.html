@@ -1,0 +1,20 @@
+<p-dialog
+  [(visible)]="visible"
+  [header]="header()"
+  [style]="{ width: width() }"
+  [draggable]="draggable()"
+  [resizable]="resizable()"
+  [modal]="modal()"
+  [closable]="closable()"
+  [dismissableMask]="true"
+  (onHide)="onDialogHide()"
+  appendTo="body"
+>
+  <!-- Body via ng-content -->
+  <ng-content />
+
+  <!-- Footer via named slot -->
+  <ng-template pTemplate="footer">
+    <ng-content select="[footer]" />
+  </ng-template>
+</p-dialog>

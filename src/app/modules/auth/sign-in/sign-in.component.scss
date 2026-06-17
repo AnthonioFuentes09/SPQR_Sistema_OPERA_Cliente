@@ -1,0 +1,222 @@
+// ── Sign-in page — estilo PAYWEB exacto ──────────────────────────────────────
+:host { display: block; }
+
+.sign-in-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-width: 0;
+  background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+  padding: 1rem;
+}
+
+.sign-in-card {
+  width: 100%;
+  max-width: 448px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+// ── Header con logo ───────────────────────────────────────────────────────────
+.sign-in-header {
+  text-align: center;
+  padding: 2rem 1.5rem 1.75rem;
+}
+
+// ── Logo 4 círculos diamond ───────────────────────────────────────────────────
+.sign-in-logo-diamond {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 1.1rem;
+}
+
+.sld-row {
+  display: flex;
+  gap: 4px;
+}
+
+.sld-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+
+.sld-gray   { background-color: #76777A; }
+.sld-blue   { background-color: #4da6e8; }
+.sld-orange { background-color: #FF671D; }
+.sld-green  { background-color: #3a7d44; }
+
+.sign-in-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #003764;
+  letter-spacing: 0.14em;
+  margin: 0 0 0.25rem;
+}
+
+.sign-in-subtitle {
+  font-size: 1.05rem;
+  color: #4b5563;
+  margin: 0;
+}
+
+// ── Cuerpo del formulario ─────────────────────────────────────────────────────
+.sign-in-body {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.sign-in-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.sign-in-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// ── Campo de formulario ───────────────────────────────────────────────────────
+.form-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.field-input-wrap {
+  position: relative;
+
+  .field-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 0.875rem;
+    z-index: 1;
+    pointer-events: none;
+  }
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.5rem !important;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background-color: #f3f3f5;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #9ca3af; }
+
+  &:focus {
+    border-color: #003764;
+    box-shadow: 0 0 0 2px rgba(0, 55, 100, 0.15);
+    background-color: #ffffff;
+  }
+}
+
+// p-password wrapper
+::ng-deep .p-password {
+  width: 100%;
+
+  input.p-inputtext {
+    width: 100% !important;
+    padding: 0.625rem 2.5rem 0.625rem 2.5rem !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    font-size: 0.875rem !important;
+    background-color: #f3f3f5 !important;
+    color: #111827 !important;
+
+    &::placeholder { color: #9ca3af; }
+
+    &:focus {
+      border-color: #003764 !important;
+      box-shadow: 0 0 0 2px rgba(0, 55, 100, 0.15) !important;
+      background-color: #ffffff !important;
+    }
+  }
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+}
+
+// ── Botón principal ───────────────────────────────────────────────────────────
+.sign-in-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(45deg, #003764, #0056a3);
+  transition: box-shadow 0.2s, transform 0.2s;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.pw-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: pw-spin 0.8s linear infinite;
+}
+
+@keyframes pw-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.sign-in-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+  text-align: center;
+
+  p {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+  }
+}

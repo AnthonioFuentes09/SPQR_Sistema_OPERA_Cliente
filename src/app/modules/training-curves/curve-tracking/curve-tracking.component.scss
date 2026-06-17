@@ -1,0 +1,11 @@
+opera-curve-tracking {
+  .row-current-week {
+    background-color: var(--p-primary-50) !important;
+    font-weight: 600;
+  }
+
+  .row-saved {
+    background-color: var(--p-green-50) !important;
+    transition: background-color 2s ease-out;
+  }
+}

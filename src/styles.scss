@@ -1,0 +1,726 @@
+// ── PrimeNG base ──────────────────────────────────────────────────────────────
+@import "primeicons/primeicons.css";
+
+// ── Google Fonts + Font Awesome (igual que PAYWEB) ────────────────────────────
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
+
+// ── Tailwind utilities ────────────────────────────────────────────────────────
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ── Variables corporativas PAYWEB ─────────────────────────────────────────────
+:root {
+  --corporate-primary:       #003764;
+  --corporate-primary-light: #0056a3;
+  --corporate-orange:        #FF671D;
+  --corporate-orange-light:  #ff8040;
+  --corporate-gray:          #76777A;
+  --corporate-gray-light:    #9a9b9e;
+
+  // Override PrimeNG Aura primary color
+  --p-primary-color:         #003764;
+  --p-primary-contrast-color:#ffffff;
+  --p-primary-hover-color:   #0056a3;
+  --p-primary-active-color:  #002a4d;
+}
+
+// ── Reset / base ──────────────────────────────────────────────────────────────
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', var(--p-font-family, sans-serif);
+  font-size: 14px;
+  background: var(--p-surface-ground);
+  color: var(--p-text-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ── Scrollbar (idéntico al de PAYWEB) ────────────────────────────────────────
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--p-surface-ground); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--corporate-gray-light); border-radius: 3px; transition: background .2s; }
+::-webkit-scrollbar-thumb:hover { background: var(--corporate-gray); }
+
+// ── Typography helpers ────────────────────────────────────────────────────────
+.page-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  margin: 0 0 1.25rem;
+}
+
+.text-muted-color { color: var(--p-text-muted-color); }
+
+// ── Status badges (igual que PAYWEB ul-stack-list pero con colores por estado) ─
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+
+  &.planificada    { background: #dbeafe; color: #1e40af; }
+  &.en-proceso     { background: #fef9c3; color: #854d0e; }
+  &.en-pausa       { background: #fde68a; color: #92400e; }
+  &.cancelada      { background: #fee2e2; color: #991b1b; }
+  &.completada     { background: #dcfce7; color: #166534; }
+  &.no-completada  { background: #f3f4f6; color: #374151; }
+  &.por-hacer      { background: #e0e7ff; color: #3730a3; }
+  &.en-progreso    { background: #fef9c3; color: #854d0e; }
+  &.solicitada     { background: #fae8ff; color: #6b21a8; }
+  &.sin-info       { background: #f3f4f6; color: #9ca3af; }
+}
+
+// ── Sign-in page ──────────────────────────────────────────────────────────────
+.sign-in-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--corporate-primary) 0%, var(--corporate-primary-light) 100%);
+}
+
+.sign-in-card {
+  width: 100%;
+  max-width: 420px;
+
+  // Card con sombra pronunciada como PAYWEB
+  &.p-card { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important; border-radius: 12px !important; }
+}
+
+.sign-in-header {
+  padding: 2rem 2rem 0;
+  text-align: center;
+}
+
+.sign-in-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--corporate-primary);
+  margin: 0 0 0.25rem;
+  letter-spacing: 0.12em;
+}
+
+.sign-in-subtitle {
+  color: var(--corporate-gray);
+  font-size: 0.875rem;
+  margin: 0 0 1.5rem;
+  font-weight: 500;
+}
+
+.sign-in-form { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.form-field { width: 100%; }
+
+.error-hint {
+  color: #ef4444;
+  font-size: 0.78rem;
+  margin-top: -0.75rem;
+}
+
+// ── Botón primario: naranja en hover (PAYWEB style) ───────────────────────────
+.p-button.p-button-primary,
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link) {
+  background: var(--corporate-primary) !important;
+  border-color: var(--corporate-primary) !important;
+
+  &:hover {
+    background: var(--corporate-orange) !important;
+    border-color: var(--corporate-orange) !important;
+  }
+
+  &:active, &:focus {
+    background: var(--corporate-primary-light) !important;
+    border-color: var(--corporate-primary-light) !important;
+  }
+}
+
+// ── DataTable estilo PAYWEB ───────────────────────────────────────────────────
+.p-datatable {
+  .p-datatable-thead > tr > th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--corporate-gray);
+    background: var(--p-surface-50, #f9fafb);
+    border-bottom: 2px solid var(--p-surface-border);
+  }
+
+  .p-datatable-tbody > tr {
+    transition: background .15s;
+
+    > td { font-size: 0.875rem; border-bottom: 1px solid var(--p-surface-border); }
+
+    &:hover > td { background: rgba(0, 55, 100, 0.04); }
+
+    &.p-highlight > td { background: rgba(0, 55, 100, 0.08); }
+  }
+}
+
+// ── Input focus: borde azul corporativo ───────────────────────────────────────
+.p-inputtext:focus,
+.p-password input:focus,
+.p-select:focus-within {
+  border-color: var(--corporate-primary) !important;
+  box-shadow: 0 0 0 2px rgba(0, 55, 100, 0.18) !important;
+}
+
+// ── ngx-toastr: idéntico a PAYWEB ────────────────────────────────────────────
+.toast-container .ngx-toastr {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #1f2937 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10) !important;
+  padding: 14px 40px 14px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 280px !important;
+  max-width: 380px !important;
+  border-left: 4px solid transparent !important;
+
+  .toast-title   { display: none !important; }
+  .toast-message { font-size: 0.875rem !important; font-weight: 500 !important; color: #1f2937 !important; }
+
+  &::before {
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  button.toast-close-button {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    color: #9ca3af !important;
+    background: none !important;
+    border: none !important;
+    font-size: 1rem !important;
+    opacity: 1 !important;
+    &:hover { color: #4b5563 !important; }
+  }
+}
+
+.toast-container .toast-success {
+  border-left-color: #16a34a !important;
+  &::before { content: '\f058'; color: #16a34a; }
+}
+.toast-container .toast-error {
+  border-left-color: #dc2626 !important;
+  &::before { content: '\f057'; color: #dc2626; }
+}
+.toast-container .toast-warning {
+  border-left-color: #d97706 !important;
+  &::before { content: '\f071'; color: #d97706; }
+}
+.toast-container .toast-info {
+  border-left-color: #2563eb !important;
+  &::before { content: '\f05a'; color: #2563eb; }
+}
+
+// ── PrimeNG Dialog ────────────────────────────────────────────────────────────
+.p-dialog .p-dialog-header {
+  background: var(--corporate-primary);
+  color: #ffffff;
+  border-radius: 10px 10px 0 0;
+
+  .p-dialog-title { font-weight: 700; font-size: 1rem; }
+  .p-dialog-header-icon { color: rgba(255,255,255,0.7) !important; &:hover { color: #fff !important; } }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ── Page card (replica el mat-card elevado de PAYWEB) ─────────────────────────
+.page-card {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+// Encabezado de pagina con acciones al lado (igual que PAYWEB)
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+
+  .page-title { flex: 1; margin: 0; }
+}
+
+// ── Avatar del header ─────────────────────────────────────────────────────────
+.p-avatar {
+  background: var(--corporate-orange) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+// ── User info en header ───────────────────────────────────────────────────────
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+
+  .user-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--corporate-primary);
+  }
+}
+
+// ── Header toggle button (pi-bars) ────────────────────────────────────────────
+.opera-header .p-button.p-button-secondary.p-button-text {
+  color: var(--corporate-gray) !important;
+  &:hover { color: var(--corporate-primary) !important; background: rgba(0,55,100,0.06) !important; }
+}
+
+// ── Table override: header mas visible ────────────────────────────────────────
+table.timeline-table thead tr,
+.p-datatable-thead > tr {
+  background: #f1f5f9 !important;
+}
+
+// ── PrimeNG Select / Dropdown estilo PAYWEB ───────────────────────────────────
+.p-select {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+
+  &:hover    { border-color: var(--corporate-primary); }
+  &-open     { border-color: var(--corporate-primary) !important; }
+}
+
+// ── ProgressSpinner color corporativo ─────────────────────────────────────────
+.p-progressspinner-circle {
+  stroke: var(--corporate-primary) !important;
+}
+
+// ── Botones acción PAYWEB (btn-table) ─────────────────────────────────────────
+// Idéntico al .btn-table de PAYWEB: sólido, cuadrado redondeado, icono blanco
+.pw-btn-table {
+  position: relative;
+  border: none;
+  cursor: pointer;
+  padding: 0.45rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: filter 0.15s ease, transform 0.15s ease;
+  color: #ffffff;
+  line-height: 1;
+
+  i, .pi, .fa-solid { font-size: 14px; }
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.12);
+    transform: scale(1.08);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.94);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  // Variantes de color (igual que PAYWEB)
+  &.pw-btn-primary   { background-color: #0d6efd; }
+  &.pw-btn-info      { background-color: #0891b2; }  // teal
+  &.pw-btn-success   { background-color: #16a34a; }
+  &.pw-btn-warning   { background-color: #d97706; }
+  &.pw-btn-danger    { background-color: #dc2626; }
+  &.pw-btn-secondary { background-color: #6b7280; }
+  &.pw-btn-dark      { background-color: #374151; }
+}
+
+.pw-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// ── Page header PAYWEB ────────────────────────────────────────────────────────
+// Equivalente a common-header-bar: icono+título+subtítulo a la izquierda, search a la derecha
+.pw-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.pw-page-title-block {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .pw-page-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    flex-shrink: 0;
+
+    i, .pi { font-size: 1.1rem; }
+  }
+
+  .pw-page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .pw-page-subtitle {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.pw-page-search {
+  position: relative;
+  flex-shrink: 0;
+
+  .pw-search-icon {
+    position: absolute;
+    left: 0.65rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 0.875rem;
+    pointer-events: none;
+  }
+
+  input {
+    padding: 0.5rem 0.875rem 0.5rem 2.2rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    width: 220px;
+    outline: none;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+
+    &::placeholder { color: #9ca3af; }
+
+    &:focus {
+      border-color: #003764;
+      box-shadow: 0 0 0 2px rgba(0, 55, 100, 0.15);
+    }
+  }
+}
+
+// ── Divisor de sección PAYWEB ─────────────────────────────────────────────────
+.pw-section-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 0.75rem 0;
+}
+
+// ── Actions bar (Consultar / Nuevo) ───────────────────────────────────────────
+.pw-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0;
+}
+
+// Botón "Consultar" (outlined gris, igual que PAYWEB)
+.pw-btn-consult {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  i, .pi { color: #7c3aed; font-size: 0.875rem; }
+
+  &:hover {
+    background: #f5f3ff;
+    border-color: #7c3aed;
+    color: #7c3aed;
+  }
+}
+
+// Botón "Nuevo" (relleno azul, igual que PAYWEB)
+.pw-btn-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  background: #3b82f6;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  i, .pi { font-size: 0.875rem; }
+
+  &:hover { background: #2563eb; }
+}
+
+// ── Drawer (panel lateral) header/footer ──────────────────────────────────────
+.pw-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  .pw-drawer-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .pw-drawer-subtitle {
+    font-size: 0.875rem;
+    color: #003764;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.03em;
+  }
+
+  .pw-drawer-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #9ca3af;
+    transition: color 0.2s, background 0.2s;
+
+    &:hover { color: #ef4444; background: #fef2f2; }
+  }
+}
+
+.pw-drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  position: sticky;
+  bottom: 0;
+
+  .pw-btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #ef4444;
+    border-radius: 6px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover { background: #dc2626; border-color: #dc2626; }
+  }
+
+  .pw-btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover { background: #1d4ed8; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+}
+
+// ── Sección de formulario en drawer (mismo look que PAYWEB) ───────────────────
+.pw-form-section {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+
+  .pw-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+
+    .pw-section-icon {
+      color: #3b82f6;
+      font-size: 0.875rem;
+    }
+
+    h2 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      margin: 0;
+    }
+  }
+}
+
+// ── p-drawer overrides ────────────────────────────────────────────────────────
+.pw-drawer-panel {
+  .p-drawer-content {
+    padding: 0 !important;
+    background: #f8fafc;
+  }
+
+  .p-drawer-header {
+    display: none !important; // usamos nuestro propio header via ng-content
+  }
+}
+
+// ── Tabla PAYWEB — thead fondo gris claro ─────────────────────────────────────
+.pw-table-wrap {
+  .p-datatable-thead > tr > th {
+    background: #f8fafc !important;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.6rem 0.875rem;
+  }
+
+  .p-datatable-tbody > tr > td {
+    padding: 0.6rem 0.875rem;
+    font-size: 0.8375rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .p-datatable-tbody > tr:hover > td {
+    background: #f8fafc;
+  }
+}
+
+// ── Drawer body ────────────────────────────────────────────────────────────────
+.pw-drawer-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+// ── Formulario dentro del drawer ───────────────────────────────────────────────
+.pw-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pw-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.pw-form-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pw-form-input {
+  width: 100% !important;
+  padding: 0.5rem 0.75rem !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #9ca3af; }
+
+  &:focus {
+    border-color: #003764 !important;
+    box-shadow: 0 0 0 2px rgba(0, 55, 100, 0.12) !important;
+    background-color: #ffffff !important;
+  }
+
+  &[readonly] {
+    background-color: #f3f4f6 !important;
+    color: #6b7280 !important;
+    cursor: default;
+  }
+
+  &[type="number"] {
+    -moz-appearance: textfield;
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button { -webkit-appearance: none; }
+  }
+}
+
+// textarea como pw-form-input
+textarea.pw-form-input {
+  resize: vertical;
+  min-height: 80px;
+}

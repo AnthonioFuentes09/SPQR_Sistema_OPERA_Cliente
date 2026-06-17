@@ -1,0 +1,40 @@
+<header class="entrena-header">
+
+  <!-- Izquierda: toggle sidebar -->
+  <div class="header-left">
+    <button class="header-menu-btn" (click)="toggleSidebar.emit()" aria-label="Alternar menú">
+      <i class="pi pi-bars"></i>
+    </button>
+
+    <!-- Saludo + roles (estilo PAYWEB) -->
+    @if (user$ | async; as user) {
+      <div class="header-greeting">
+        <p class="greeting-text">
+          {{ greeting }}, <strong>{{ user.user_Name }}</strong>
+        </p>
+        @if (user.roles.length) {
+          <p class="greeting-roles">
+            Roles:&nbsp;
+            @for (role of user.roles; track role; let last = $last) {
+              <span class="role-chip">{{ role }}</span>
+              @if (!last) { <span class="role-sep">|</span> }
+            }
+          </p>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Derecha: avatar + menú -->
+  <div class="header-right">
+    @if (user$ | async; as user) {
+      <div class="user-menu-wrap">
+        <button class="user-avatar-btn" (click)="menu.toggle($event)" [title]="user.user_Name">
+          <i class="pi pi-user"></i>
+        </button>
+        <p-menu #menu [model]="userMenuItems" [popup]="true" appendTo="body" />
+      </div>
+    }
+  </div>
+
+</header>

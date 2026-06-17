@@ -1,0 +1,96 @@
+<nav class="sidenav" [class.collapsed]="collapsed">
+
+  <!-- ── Logo ─────────────────────────────────────────────────────────── -->
+  <div class="sidenav-logo">
+    <div class="entrena-logo-mark">
+      <div class="lm-row"><div class="lm-circle lm-gray"></div></div>
+      <div class="lm-row">
+        <div class="lm-circle lm-blue"></div>
+        <div class="lm-circle lm-orange"></div>
+      </div>
+      <div class="lm-row"><div class="lm-circle lm-green"></div></div>
+    </div>
+    @if (!collapsed) {
+      <span class="logo-text">ENTRENA</span>
+    }
+  </div>
+
+  <!-- ── Nav ───────────────────────────────────────────────────────────── -->
+  @if (!collapsed) {
+    <p class="nav-section-label">MENÚ PRINCIPAL</p>
+  }
+
+  <ul class="nav-list">
+    @for (item of items; track item.id) {
+
+      @if (item.type === 'collapsable') {
+        <li class="nav-group" [class.group-open]="isOpen(item.id)">
+
+          <button
+            class="nav-group-btn"
+            (click)="toggleGroup(item.id)"
+            [title]="collapsed ? item.title : ''"
+          >
+            <span class="nav-icon-wrap">
+              <i [class]="item.icon ?? 'pi pi-circle'"></i>
+            </span>
+            @if (!collapsed) {
+              <span class="nav-item-label">{{ item.title }}</span>
+              <i class="pi pi-chevron-right nav-chevron"></i>
+            }
+          </button>
+
+          <!-- Children: siempre en DOM, se anima con max-height CSS -->
+          <ul class="nav-children" [class.open]="isOpen(item.id) && !collapsed">
+            @for (child of item.children; track child.id) {
+              <li>
+                <a
+                  [routerLink]="child.route"
+                  routerLinkActive="active"
+                  class="nav-child-item"
+                >
+                  <i [class]="child.icon ?? 'pi pi-minus'" class="child-icon"></i>
+                  <span>{{ child.title }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+
+        </li>
+      }
+
+      @if (item.type === 'basic') {
+        <li>
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            class="nav-basic-item"
+            [title]="collapsed ? item.title : ''"
+          >
+            <span class="nav-icon-wrap">
+              <i [class]="item.icon ?? 'pi pi-circle'"></i>
+            </span>
+            @if (!collapsed) {
+              <span class="nav-item-label">{{ item.title }}</span>
+            }
+          </a>
+        </li>
+      }
+
+    }
+  </ul>
+
+  <!-- ── Usuario al fondo ──────────────────────────────────────────────── -->
+  @if (user$ | async; as user) {
+    <div class="sidenav-user" [class.collapsed]="collapsed">
+      <div class="su-avatar">{{ getInitials(user.user_Name) }}</div>
+      @if (!collapsed) {
+        <div class="su-info">
+          <span class="su-name">{{ user.user_Name }}</span>
+          <span class="su-role">{{ user.roles[0] }}</span>
+        </div>
+      }
+    </div>
+  }
+
+</nav>

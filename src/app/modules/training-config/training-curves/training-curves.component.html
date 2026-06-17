@@ -1,0 +1,83 @@
+<div class="p-4">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="page-title">Configuración de Curvas Base</h1>
+    <p-button label="Nueva curva" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  <opera-table
+    [columns]="columns"
+    [data]="$any(curves())"
+    [loading]="loading()"
+    (editRow)="onEdit($any($event))"
+    (deleteRow)="onDelete($any($event))"
+  />
+</div>
+
+<!-- Modal crear/editar curva -->
+<opera-dialog
+  [(visible)]="dialogVisible"
+  [header]="isEditing() ? 'Editar curva base' : 'Nueva curva base'"
+  width="680px"
+>
+  <form [formGroup]="form" class="flex flex-col gap-4 py-2">
+    <!-- Datos de la curva -->
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="block text-sm font-medium mb-1">Nombre de la curva *</label>
+        <input pInputText formControlName="curve_Name" class="w-full" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Versión</label>
+        <p-inputNumber formControlName="curve_Version" [min]="1" styleClass="w-full" />
+      </div>
+    </div>
+
+    <!-- Semanas -->
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-semibold">Semanas</h3>
+        <p-button
+          label="Agregar semana"
+          icon="pi pi-plus"
+          size="small"
+          severity="secondary"
+          (onClick)="addWeek()"
+        />
+      </div>
+
+      <div class="weeks-form-list">
+        @for (weekCtrl of weeksArray.controls; track $index) {
+          <div class="week-form-row" [formGroup]="weekCtrl">
+            <p-inputNumber formControlName="week_Number" [min]="1" placeholder="Sem." styleClass="w-16" />
+            <p-inputNumber formControlName="level" [min]="1" placeholder="Nivel" styleClass="w-16" />
+            <p-inputNumber formControlName="target_Efficiency" [min]="0" [max]="200" suffix="%" placeholder="Ef.%" styleClass="w-24" />
+            <p-inputNumber formControlName="base_Hours" [min]="0" placeholder="Horas" styleClass="w-20" />
+            <p-inputNumber formControlName="base_Pieces" [min]="0" placeholder="Piezas" styleClass="w-20" />
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [rounded]="true"
+              size="small"
+              (onClick)="removeWeek($index)"
+            />
+          </div>
+        }
+        @if (weeksArray.length === 0) {
+          <p class="text-sm text-muted-color text-center py-3">
+            Sin semanas — usa "Agregar semana" para comenzar
+          </p>
+        }
+      </div>
+    </div>
+  </form>
+
+  <div footer class="flex justify-end gap-2 pt-2">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+    <p-button
+      [label]="isEditing() ? 'Guardar cambios' : 'Crear curva'"
+      [loading]="saving()"
+      (onClick)="onSave()"
+    />
+  </div>
+</opera-dialog>

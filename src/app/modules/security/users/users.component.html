@@ -1,0 +1,141 @@
+<!-- Layout PAYWEB: page-card con header-bar (icono+título+subtítulo+search) -->
+<div class="page-card">
+
+  <!-- pw-page-header: icono + título + subtítulo | search -->
+  <div class="pw-page-header">
+    <div class="pw-page-title-block">
+      <div class="pw-page-icon" style="background:#e8f5e9">
+        <i class="pi pi-users" style="color:#2e7d32"></i>
+      </div>
+      <div>
+        <h1 class="pw-page-title">Usuarios</h1>
+        <p class="pw-page-subtitle">Registros totales: {{ users().length }}</p>
+      </div>
+    </div>
+
+    <!-- Buscador alineado a la derecha (igual que common-header-bar PAYWEB) -->
+    <div class="pw-page-search">
+      <i class="pi pi-search pw-search-icon"></i>
+      <input
+        type="text"
+        placeholder="Buscar registro..."
+        (input)="onSearch($event)"
+      />
+    </div>
+  </div>
+
+  <hr class="pw-section-divider" />
+
+  <!-- Actions bar: Consultar + Nuevo (igual que PAYWEB user-list) -->
+  <div class="pw-actions-bar">
+    <button class="pw-btn-consult" type="button">
+      <i class="pi pi-eye"></i>
+      Consultar
+    </button>
+    <button class="pw-btn-new" type="button" (click)="openCreate()">
+      <i class="pi pi-plus-circle"></i>
+      Nuevo
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <opera-table
+    [columns]="columns"
+    [data]="$any(filteredUsers())"
+    [loading]="loading()"
+    (editRow)="onEdit($any($event))"
+    (deleteRow)="onDelete($any($event))"
+  />
+
+</div>
+
+<!-- Drawer edición (equivalente al mat-drawer de PAYWEB) -->
+<opera-drawer
+  [(visible)]="drawerVisible"
+  [title]="isEditing() ? 'Editar Usuario' : 'Nuevo Usuario'"
+  [subtitle]="drawerSubtitle()"
+  width="520px"
+>
+  <form [formGroup]="form" class="space-y-4">
+
+    <!-- Sección información general -->
+    <div class="pw-form-section">
+      <div class="pw-section-header">
+        <i class="pi pi-info-circle pw-section-icon"></i>
+        <h2>Información General</h2>
+      </div>
+
+      <div class="pw-form-fields">
+        <div class="pw-form-group">
+          <label class="pw-form-label">Código empleado *</label>
+          <input
+            pInputText
+            formControlName="employee_Code"
+            class="pw-form-input"
+            [readonly]="isEditing()"
+            placeholder="Ingrese código"
+          />
+        </div>
+
+        <div class="pw-form-group">
+          <label class="pw-form-label">Nombre completo *</label>
+          <input
+            pInputText
+            formControlName="user_Name"
+            class="pw-form-input"
+            placeholder="Nombre del usuario"
+          />
+        </div>
+
+        <div class="pw-form-group">
+          <label class="pw-form-label">Email *</label>
+          <input
+            pInputText
+            type="email"
+            formControlName="user_Email"
+            class="pw-form-input"
+            placeholder="correo@empresa.com"
+          />
+        </div>
+
+        <div class="pw-form-group">
+          <label class="pw-form-label">ID Rol *</label>
+          <input
+            pInputText
+            type="number"
+            formControlName="role_Id"
+            class="pw-form-input"
+            placeholder="ID del rol"
+          />
+        </div>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- Footer del drawer: Cancelar (rojo) + Guardar (azul) -->
+  <div footer class="pw-drawer-footer">
+    <button
+      type="button"
+      class="pw-btn-cancel"
+      (click)="drawerVisible.set(false)"
+    >
+      <i class="pi pi-times"></i>
+      Cancelar
+    </button>
+    <button
+      type="button"
+      class="pw-btn-save"
+      [disabled]="saving()"
+      (click)="onSave()"
+    >
+      @if (saving()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="fa-solid fa-floppy-disk"></i>
+      }
+      Guardar
+    </button>
+  </div>
+
+</opera-drawer>

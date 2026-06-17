@@ -1,0 +1,35 @@
+<p-drawer
+  [(visible)]="visible"
+  position="right"
+  [style]="{ width: width() }"
+  [modal]="modal()"
+  [showCloseIcon]="false"
+  [blockScroll]="true"
+  appendTo="body"
+  styleClass="pw-drawer-panel"
+>
+  <!-- Header personalizado (sticky top, igual que PAYWEB) -->
+  <ng-template pTemplate="header">
+    <div class="pw-drawer-header">
+      <div>
+        <h1 class="pw-drawer-title">{{ title() }}</h1>
+        @if (subtitle()) {
+          <p class="pw-drawer-subtitle">{{ subtitle() }}</p>
+        }
+      </div>
+      <button type="button" class="pw-drawer-close" (click)="close()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Body scrollable -->
+  <div class="pw-drawer-body">
+    <ng-content />
+  </div>
+
+  <!-- Footer con Cancelar / Guardar -->
+  <ng-template pTemplate="footer">
+    <ng-content select="[footer]" />
+  </ng-template>
+</p-drawer>

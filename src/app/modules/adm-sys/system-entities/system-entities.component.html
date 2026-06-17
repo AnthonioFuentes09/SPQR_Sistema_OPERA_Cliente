@@ -1,0 +1,20 @@
+<div class="p-4">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="page-title">Entidades del Sistema</h1>
+    <p-button label="Nueva entidad" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+  <opera-table [columns]="columns" [data]="$any(entities())" [loading]="loading()"
+    (editRow)="onEdit($any($event))" (deleteRow)="onDelete($any($event))" />
+</div>
+
+<opera-dialog [(visible)]="dialogVisible" [header]="isEditing() ? 'Editar entidad' : 'Nueva entidad'" width="400px">
+  <form [formGroup]="form" class="flex flex-col gap-3 py-2">
+    <div><label class="block text-sm font-medium mb-1">Código *</label><input pInputText formControlName="entity_Code" class="w-full" /></div>
+    <div><label class="block text-sm font-medium mb-1">Nombre *</label><input pInputText formControlName="entity_Name" class="w-full" /></div>
+    <div><label class="block text-sm font-medium mb-1">Descripción</label><input pInputText formControlName="entity_Description" class="w-full" /></div>
+  </form>
+  <div footer class="flex justify-end gap-2 pt-2">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+    <p-button [label]="isEditing() ? 'Guardar' : 'Crear'" [loading]="saving()" (onClick)="onSave()" />
+  </div>
+</opera-dialog>

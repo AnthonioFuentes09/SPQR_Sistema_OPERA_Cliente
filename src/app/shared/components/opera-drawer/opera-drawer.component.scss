@@ -1,0 +1,27 @@
+:host { display: block; }
+
+// El body del drawer (contenido scrollable)
+.pw-drawer-body {
+  padding: 1.5rem;
+  background: #f8fafc;
+  min-height: 100%;
+}
+
+// Overrides para p-drawer — header custom y body sin padding extra
+::ng-deep .pw-drawer-panel {
+  .p-drawer-content {
+    padding: 0 !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-drawer-header {
+    padding: 0 !important;
+    border-bottom: none !important;
+  }
+
+  .p-drawer-footer {
+    padding: 0 !important;
+  }
+}

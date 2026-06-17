@@ -1,0 +1,29 @@
+<div class="opera-filter-wrapper">
+  <label class="block text-sm font-medium mb-1 text-muted-color">{{ label() }}</label>
+
+  @if (multiple()) {
+    <p-multiselect
+      [options]="options()"
+      [ngModel]="selectedValues()"
+      (ngModelChange)="onSelectionChange($event)"
+      optionLabel="description"
+      optionValue="valueKey"
+      [placeholder]="placeholder()"
+      [showClear]="true"
+      styleClass="w-full"
+      appendTo="body"
+    />
+  } @else {
+    <p-select
+      [options]="options()"
+      [ngModel]="selectedValues()"
+      (ngModelChange)="onSelectionChange($event)"
+      optionLabel="description"
+      optionValue="valueKey"
+      [placeholder]="placeholder()"
+      [showClear]="true"
+      styleClass="w-full"
+      appendTo="body"
+    />
+  }
+</div>
