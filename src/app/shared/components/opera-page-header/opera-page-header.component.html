@@ -1,0 +1,35 @@
+<div class="oph-root">
+
+  <!-- Izquierda: icono + título + subtítulo -->
+  <div class="oph-left">
+    <div class="oph-icon-wrap" [attr.data-color]="iconColor()">
+      <i [class]="icon()"></i>
+    </div>
+    <div class="oph-text">
+      <h1 class="oph-title">{{ title() }}</h1>
+      @if (subtitle()) {
+        <p class="oph-subtitle">{{ subtitle() }}</p>
+      }
+    </div>
+  </div>
+
+  <!-- Derecha: búsqueda -->
+  @if (showSearch()) {
+    <div class="oph-search-wrap">
+      <i class="pi pi-search oph-search-icon"></i>
+      <input
+        class="oph-search-input"
+        type="text"
+        [placeholder]="placeholder()"
+        [value]="searchTerm()"
+        (input)="onSearch($any($event.target).value)"
+      />
+      @if (searchTerm()) {
+        <button class="oph-search-clear" (click)="clearSearch()" type="button" aria-label="Limpiar búsqueda">
+          <i class="pi pi-times"></i>
+        </button>
+      }
+    </div>
+  }
+
+</div>

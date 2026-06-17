@@ -1,20 +1,19 @@
 import { Component, input, output, TemplateRef, contentChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { InputTextModule } from 'primeng/inputtext';
 
-// ── Acción individual de columna (igual que btn en PAYWEB) ──────────────────
+// ── Acción individual de columna ───────────────────────────────────────────────
 export interface ColumnAction {
   /** fa-solid icon class, ej: 'fa-solid fa-pencil' o 'pi pi-pencil' */
   icon: string;
   tooltip?: string;
-  /** color del botón */
   color?: 'primary' | 'info' | 'success' | 'warning' | 'danger' | 'secondary' | 'dark';
-  /** clave emitida en actionClick */
   action: string;
-  /** fondo hex explícito (tiene prioridad sobre color) */
   bgColor?: string;
 }
 
@@ -23,6 +22,7 @@ export interface Column {
   header: string;
   type: 'text' | 'badge' | 'number' | 'boolean' | 'actions' | 'template';
   sortable?: boolean;
+  /** Muestra filtro de texto por columna en el header */
   filterable?: boolean;
   width?: string;
   badgeClass?: (value: unknown) => string;
@@ -33,26 +33,27 @@ export interface Column {
 @Component({
   selector: 'opera-table',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, TagModule, TooltipModule],
+  imports: [CommonModule, FormsModule, TableModule, ButtonModule, TagModule, TooltipModule, InputTextModule],
   templateUrl: './opera-table.component.html',
   styleUrl: './opera-table.component.scss',
 })
 export class OperaTableComponent<T extends Record<string, unknown>> {
   // ── Inputs ──────────────────────────────────────────────────────────────────
-  readonly columns          = input.required<Column[]>();
-  readonly data             = input<T[]>([]);
-  readonly loading          = input<boolean>(false);
-  readonly paginator        = input<boolean>(true);
-  readonly rows             = input<number>(25);
-  readonly rowsPerPageOptions = input<number[]>([10, 25, 50]);
-  readonly scrollable       = input<boolean>(false);
-  readonly scrollHeight     = input<string>('400px');
+  readonly columns             = input.required<Column[]>();
+  readonly data                = input<T[]>([]);
+  readonly loading             = input<boolean>(false);
+  readonly paginator           = input<boolean>(true);
+  readonly rows                = input<number>(25);
+  readonly rowsPerPageOptions  = input<number[]>([10, 25, 50]);
+  readonly scrollable          = input<boolean>(false);
+  readonly scrollHeight        = input<string>('400px');
+  /** Habilita redimensionamiento de columnas */
+  readonly resizableColumns    = input<boolean>(true);
 
   // ── Outputs ─────────────────────────────────────────────────────────────────
   readonly editRow     = output<T>();
   readonly deleteRow   = output<T>();
   readonly rowClick    = output<T>();
-  /** Emite { action, row } para cualquier botón de acción */
   readonly actionClick = output<{ action: string; row: T }>();
 
   readonly actionsTemplate = contentChild<TemplateRef<unknown>>('actionsCell');
@@ -67,9 +68,8 @@ export class OperaTableComponent<T extends Record<string, unknown>> {
     return `status-badge ${value}`;
   }
 
-  /** Clase CSS para el color del botón PAYWEB */
   getActionColorClass(act: ColumnAction): string {
-    if (act.bgColor) return ''; // usa style en línea
+    if (act.bgColor) return '';
     const map: Record<string, string> = {
       primary:   'pw-btn-primary',
       info:      'pw-btn-info',

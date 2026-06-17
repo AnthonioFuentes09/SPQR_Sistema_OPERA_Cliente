@@ -10,6 +10,8 @@ import { AccessDTO } from 'app/core/interfaces/security/security.interface';
 import { OperaTableComponent, type Column } from 'app/shared/components/opera-table/opera-table.component';
 import { OperaDrawerComponent } from 'app/shared/components/opera-drawer/opera-drawer.component';
 import { OperaFiltersComponent } from 'app/shared/components/opera-filters/opera-filters.component';
+import { OperaPageHeaderComponent } from 'app/shared/components/opera-page-header/opera-page-header.component';
+import { OperaActionsBarComponent } from 'app/shared/components/opera-actions-bar/opera-actions-bar.component';
 import { BaseItemFilterOptions } from 'app/core/interfaces/adm-sys/adm-sys.interface';
 
 interface AccessForm {
@@ -29,6 +31,8 @@ interface AccessForm {
     OperaTableComponent,
     OperaDrawerComponent,
     OperaFiltersComponent,
+    OperaPageHeaderComponent,
+    OperaActionsBarComponent,
   ],
   templateUrl: './access.component.html',
   styleUrl: './access.component.scss',
@@ -111,8 +115,8 @@ export class AccessComponent implements OnInit {
     }
   }
 
-  onSearch(event: Event): void {
-    this._search.set((event.target as HTMLInputElement).value);
+  onSearch(term: string): void {
+    this._search.set(term);
   }
 
   onModuleFilter(values: string[]): void {

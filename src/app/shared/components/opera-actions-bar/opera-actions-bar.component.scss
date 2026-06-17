@@ -1,0 +1,9 @@
+:host { display: block; }
+
+.oab-root {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.625rem 0;
+}

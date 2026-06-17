@@ -10,6 +10,8 @@ import { ExceptionService } from 'app/core/services/utils/exception.service';
 import { RoleDTO } from 'app/core/interfaces/security/security.interface';
 import { OperaTableComponent, type Column } from 'app/shared/components/opera-table/opera-table.component';
 import { OperaDrawerComponent } from 'app/shared/components/opera-drawer/opera-drawer.component';
+import { OperaPageHeaderComponent } from 'app/shared/components/opera-page-header/opera-page-header.component';
+import { OperaActionsBarComponent } from 'app/shared/components/opera-actions-bar/opera-actions-bar.component';
 
 interface RoleForm {
   role_Name:        FormControl<string>;
@@ -27,6 +29,8 @@ interface RoleForm {
     TextareaModule,
     OperaTableComponent,
     OperaDrawerComponent,
+    OperaPageHeaderComponent,
+    OperaActionsBarComponent,
   ],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss',
@@ -96,8 +100,8 @@ export class RolesComponent implements OnInit {
     }
   }
 
-  onSearch(event: Event): void {
-    this._search.set((event.target as HTMLInputElement).value);
+  onSearch(term: string): void {
+    this._search.set(term);
   }
 
   openCreate(): void {

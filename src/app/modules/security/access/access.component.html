@@ -1,31 +1,16 @@
-<!-- Layout PAYWEB: page-card con header-bar -->
 <div class="page-card">
 
-  <div class="pw-page-header">
-    <div class="pw-page-title-block">
-      <div class="pw-page-icon" style="background:#e3f2fd">
-        <i class="pi pi-lock" style="color:#1565c0"></i>
-      </div>
-      <div>
-        <h1 class="pw-page-title">Control de Accesos</h1>
-        <p class="pw-page-subtitle">Registros totales: {{ filteredAccesses().length }}</p>
-      </div>
-    </div>
-
-    <div class="pw-page-search">
-      <i class="pi pi-search pw-search-icon"></i>
-      <input
-        type="text"
-        placeholder="Buscar registro..."
-        (input)="onSearch($event)"
-      />
-    </div>
-  </div>
+  <opera-page-header
+    icon="pi pi-lock"
+    iconColor="primary"
+    title="Control de Accesos"
+    [subtitle]="'Registros totales: ' + filteredAccesses().length"
+    (searchChange)="onSearch($event)"
+  />
 
   <hr class="pw-section-divider" />
 
-  <!-- Filtro por módulo + Actions bar -->
-  <div class="pw-actions-bar">
+  <opera-actions-bar>
     <opera-filters
       [options]="moduleOptions()"
       label="Módulo"
@@ -33,17 +18,15 @@
       placeholder="Todos los módulos"
       (filterChange)="onModuleFilter($event)"
     />
-    <div class="flex gap-2 ml-auto">
-      <button class="pw-btn-consult" type="button">
-        <i class="pi pi-eye"></i>
-        Consultar
-      </button>
-      <button class="pw-btn-new" type="button" (click)="openCreate()">
-        <i class="pi pi-plus-circle"></i>
-        Nuevo
-      </button>
-    </div>
-  </div>
+    <button class="pw-btn-consult" type="button">
+      <i class="pi pi-eye"></i>
+      Consultar
+    </button>
+    <button class="pw-btn-new" type="button" (click)="openCreate()">
+      <i class="pi pi-plus-circle"></i>
+      Nuevo
+    </button>
+  </opera-actions-bar>
 
   <opera-table
     [columns]="columns"
@@ -55,7 +38,6 @@
 
 </div>
 
-<!-- Drawer edición -->
 <opera-drawer
   [(visible)]="drawerVisible"
   [title]="isEditing() ? 'Editar Acceso' : 'Nuevo Acceso'"
@@ -63,73 +45,44 @@
   width="480px"
 >
   <form [formGroup]="form" class="space-y-4">
-
     <div class="pw-form-section">
       <div class="pw-section-header">
         <i class="pi pi-lock pw-section-icon"></i>
         <h2>Configuración del Acceso</h2>
       </div>
-
       <div class="pw-form-fields">
         <div class="pw-form-group">
           <label class="pw-form-label">Código *</label>
-          <input
-            pInputText
-            formControlName="access_Code"
-            class="pw-form-input"
-            [readonly]="isEditing()"
-            placeholder="Ej: USERS_VIEW"
-          />
+          <input pInputText formControlName="access_Code" class="pw-form-input"
+            [readonly]="isEditing()" placeholder="Ej: USERS_VIEW" />
         </div>
-
         <div class="pw-form-group">
           <label class="pw-form-label">Nombre *</label>
-          <input
-            pInputText
-            formControlName="access_Name"
-            class="pw-form-input"
-            placeholder="Nombre descriptivo"
-          />
+          <input pInputText formControlName="access_Name" class="pw-form-input"
+            placeholder="Nombre descriptivo" />
         </div>
-
         <div class="pw-form-group">
           <label class="pw-form-label">Módulo *</label>
-          <input
-            pInputText
-            formControlName="access_Module"
-            class="pw-form-input"
-            placeholder="Ej: Seguridad"
-          />
+          <input pInputText formControlName="access_Module" class="pw-form-input"
+            placeholder="Ej: Seguridad" />
         </div>
-
         <div class="pw-form-group">
           <label class="pw-form-label">ID Rol *</label>
-          <input
-            pInputText
-            type="number"
-            formControlName="role_Id"
-            class="pw-form-input"
-            placeholder="ID del rol asociado"
-          />
+          <input pInputText type="number" formControlName="role_Id" class="pw-form-input"
+            placeholder="ID del rol asociado" />
         </div>
       </div>
     </div>
-
   </form>
 
   <div footer class="pw-drawer-footer">
     <button type="button" class="pw-btn-cancel" (click)="drawerVisible.set(false)">
-      <i class="pi pi-times"></i>
-      Cancelar
+      <i class="pi pi-times"></i> Cancelar
     </button>
     <button type="button" class="pw-btn-save" [disabled]="saving()" (click)="onSave()">
-      @if (saving()) {
-        <i class="pi pi-spin pi-spinner"></i>
-      } @else {
-        <i class="fa-solid fa-floppy-disk"></i>
-      }
+      @if (saving()) { <i class="pi pi-spin pi-spinner"></i> }
+      @else          { <i class="fa-solid fa-floppy-disk"></i> }
       Guardar
     </button>
   </div>
-
 </opera-drawer>

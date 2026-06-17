@@ -1,0 +1,130 @@
+:host { display: block; }
+
+.oph-root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+// ── Lado izquierdo ────────────────────────────────────────────────────────────
+.oph-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+// Círculo de icono — variantes por data-color
+.oph-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  flex-shrink: 0;
+
+  i { font-size: 1.1rem; }
+
+  // Colores
+  &[data-color='primary'] {
+    background: #dbeafe;
+    i { color: #1d4ed8; }
+  }
+  &[data-color='success'] {
+    background: #dcfce7;
+    i { color: #15803d; }
+  }
+  &[data-color='warning'] {
+    background: #fef9c3;
+    i { color: #a16207; }
+  }
+  &[data-color='danger'] {
+    background: #fee2e2;
+    i { color: #b91c1c; }
+  }
+  &[data-color='orange'] {
+    background: #ffedd5;
+    i { color: #c2410c; }
+  }
+  &[data-color='gray'] {
+    background: #f3f4f6;
+    i { color: #4b5563; }
+  }
+}
+
+.oph-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.oph-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.oph-subtitle {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+}
+
+// ── Búsqueda ──────────────────────────────────────────────────────────────────
+.oph-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.oph-search-icon {
+  position: absolute;
+  left: 0.625rem;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+.oph-search-input {
+  padding: 0.5rem 2rem 0.5rem 2rem;
+  width: 240px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #374151;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &::placeholder { color: #9ca3af; }
+
+  &:focus {
+    border-color: var(--corporate-primary, #003764);
+    box-shadow: 0 0 0 3px rgba(0, 55, 100, 0.1);
+  }
+}
+
+.oph-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 2px;
+  border-radius: 4px;
+  transition: color 0.15s;
+
+  &:hover { color: #374151; }
+
+  i { font-size: 0.7rem; }
+}

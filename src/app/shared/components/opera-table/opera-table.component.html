@@ -9,25 +9,33 @@
     [scrollable]="scrollable()"
     [scrollHeight]="scrollable() ? scrollHeight() : undefined"
     [tableStyle]="{ 'min-width': '100%' }"
-    styleClass="p-datatable-sm"
+    [resizableColumns]="resizableColumns()"
+    columnResizeMode="expand"
+    styleClass="p-datatable-sm p-datatable-gridlines"
     [showCurrentPageReport]="true"
     currentPageReportTemplate="{totalRecords} registros"
+    [filterDelay]="300"
     (onRowClick)="rowClick.emit($any($event).data)"
+    paginatorPosition="bottom"
   >
-    <!-- ── Header ── -->
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
     <ng-template pTemplate="header" let-columns>
+      <!-- Fila de títulos -->
       <tr>
         @for (col of columns; track col.field) {
           <th
             [style.width]="col.width ?? 'auto'"
             [pSortableColumn]="col.sortable ? col.field : undefined"
+            pResizableColumn
+            [pResizableColumnDisabled]="col.type === 'actions'"
           >
             <div class="pw-th-content">
               <span class="pw-th-label">{{ col.header }}</span>
               <span class="pw-th-icons">
                 @if (col.sortable) {
                   <p-sortIcon [field]="col.field" />
-                } @else {
+                } @else if (col.type !== 'actions') {
                   <i class="pi pi-sort-alt pw-th-sort-icon"></i>
                 }
               </span>
@@ -35,9 +43,35 @@
           </th>
         }
       </tr>
+
+      <!-- Fila de filtros -->
+      <tr class="pw-filter-row">
+        @for (col of columns; track col.field) {
+          <th>
+            @if (col.filterable && col.type !== 'actions') {
+              <p-columnFilter
+                [field]="col.field"
+                matchMode="contains"
+                [showMenu]="false"
+              >
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input
+                    pInputText
+                    type="text"
+                    [ngModel]="value"
+                    (ngModelChange)="filter($event)"
+                    class="pw-filter-input"
+                    [placeholder]="'Filtrar ' + col.header.toLowerCase()"
+                  />
+                </ng-template>
+              </p-columnFilter>
+            }
+          </th>
+        }
+      </tr>
     </ng-template>
 
-    <!-- ── Body ── -->
+    <!-- ── Body ──────────────────────────────────────────────────────────── -->
     <ng-template pTemplate="body" let-row let-columns="columns">
       <tr class="pw-table-row">
         @for (col of columns; track col.field) {
@@ -64,7 +98,6 @@
 
               @case ('actions') {
                 <div class="pw-btn-group">
-                  <!-- Acciones definidas explícitamente -->
                   @if (col.actions && col.actions.length > 0) {
                     @for (act of col.actions; track act.action) {
                       <button
@@ -78,7 +111,6 @@
                       </button>
                     }
                   } @else {
-                    <!-- Acciones por defecto: editar + eliminar -->
                     <button
                       type="button"
                       class="pw-btn-table pw-btn-primary"
@@ -109,7 +141,7 @@
       </tr>
     </ng-template>
 
-    <!-- ── Sin registros ── -->
+    <!-- ── Sin registros ─────────────────────────────────────────────────── -->
     <ng-template pTemplate="emptymessage" let-columns>
       <tr>
         <td [attr.colspan]="columns.length">
@@ -119,6 +151,17 @@
           </div>
         </td>
       </tr>
+    </ng-template>
+
+    <!-- ── Paginador personalizado (izquierda) ────────────────────────────── -->
+    <ng-template pTemplate="paginatorleft" let-state>
+      <div class="pw-paginator-left">
+        <span class="pw-pag-total">{{ state.totalRecords }} registros</span>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="paginatorright">
+      <!-- espacio en blanco — los controles del centro se mueven via CSS -->
     </ng-template>
 
   </p-table>

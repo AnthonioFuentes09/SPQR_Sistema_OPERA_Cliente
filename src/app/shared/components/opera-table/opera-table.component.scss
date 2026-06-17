@@ -20,6 +20,32 @@
 
 .pw-th-sort-icon { font-size: 0.65rem; }
 
+// ── Fila de filtros ───────────────────────────────────────────────────────────
+.pw-filter-row th {
+  padding: 4px 6px !important;
+  background: #f9fafb !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+.pw-filter-input {
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #374151;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &::placeholder { color: #9ca3af; font-size: 0.74rem; }
+
+  &:focus {
+    border-color: var(--corporate-primary, #003764);
+    box-shadow: 0 0 0 2px rgba(0, 55, 100, 0.1);
+  }
+}
+
 // ── Row ───────────────────────────────────────────────────────────────────────
 .pw-table-row { transition: background 0.12s; }
 
@@ -47,4 +73,29 @@
 
   i { font-size: 2rem; }
   span { font-size: 0.875rem; font-weight: 500; }
+}
+
+// ── Paginador izquierda ───────────────────────────────────────────────────────
+.pw-paginator-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pw-pag-total {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+// Override PrimeNG: mover controles de paginación a la izquierda
+::ng-deep .p-paginator {
+  justify-content: flex-start !important;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+// Override: eliminar margen del p-columnFilter para inputs compactos
+::ng-deep .p-column-filter {
+  width: 100%;
 }
