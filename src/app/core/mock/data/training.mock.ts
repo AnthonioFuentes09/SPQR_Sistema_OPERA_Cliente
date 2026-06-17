@@ -100,29 +100,17 @@ export const MOCK_REQUESTS: CurveRequestDto[] = [
   },
 ];
 
+// Nota: TrainingConfigService ya no usa HTTP — estos datos son solo para el mock interceptor (dead code)
 export const MOCK_CURVES: CurveDto[] = [
   {
-    curve_Code: 'C_M_001', curve_Version: 1, curve_Description: 'Curva Básica Costura',
-    curve_Category: 'M', opExenta_AlphaNumId: 'OP001', operation_Name: 'Operación de Costura Lineal',
-    is_Active: true,
-    weeks: [
-      { week_Number: 1, curve_Level: 1, base_Hours: 48, target_Efficiency: 60, base_Pieces: 350 },
-      { week_Number: 2, curve_Level: 1, base_Hours: 48, target_Efficiency: 65, base_Pieces: 370 },
-      { week_Number: 3, curve_Level: 2, base_Hours: 48, target_Efficiency: 70, base_Pieces: 400 },
-      { week_Number: 4, curve_Level: 2, base_Hours: 48, target_Efficiency: 75, base_Pieces: 430 },
-      { week_Number: 5, curve_Level: 3, base_Hours: 48, target_Efficiency: 80, base_Pieces: 460 },
-      { week_Number: 6, curve_Level: 3, base_Hours: 48, target_Efficiency: 85, base_Pieces: 500 },
+    code: 'C_ENSAMBLE_001', name_Curve: 'Curva Básica Costura',
+    description: 'Curva referencia para el interceptor mock',
+    catExenta_AlphaNumId: 'ENSAMBLE', isActive: true,
+    selectedOperations: ['E001'], canti_Opers: 1,
+    selectedWeeks: [
+      { level: 1, base_Hours: 48, target_Efficiency: 60, canti_Pieces: 350, tolerance: 10 },
+      { level: 2, base_Hours: 48, target_Efficiency: 70, canti_Pieces: 400, tolerance: 10 },
     ],
-  },
-  {
-    curve_Code: 'C_M_002', curve_Version: 1, curve_Description: 'Curva Ensamble',
-    curve_Category: 'M', opExenta_AlphaNumId: 'OP002', operation_Name: 'Ensamble de Componentes',
-    is_Active: true,
-    weeks: [
-      { week_Number: 1, curve_Level: 1, base_Hours: 48, target_Efficiency: 55, base_Pieces: 310 },
-      { week_Number: 2, curve_Level: 1, base_Hours: 48, target_Efficiency: 60, base_Pieces: 330 },
-      { week_Number: 3, curve_Level: 2, base_Hours: 48, target_Efficiency: 68, base_Pieces: 380 },
-      { week_Number: 4, curve_Level: 2, base_Hours: 48, target_Efficiency: 75, base_Pieces: 420 },
-    ],
+    canti_Semanas: 2,
   },
 ];

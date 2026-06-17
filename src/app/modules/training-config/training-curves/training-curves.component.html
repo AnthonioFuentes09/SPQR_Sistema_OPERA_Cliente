@@ -1,83 +1,254 @@
-<div class="p-4">
-  <div class="flex items-center justify-between mb-4">
-    <h1 class="page-title">Configuración de Curvas Base</h1>
-    <p-button label="Nueva curva" icon="pi pi-plus" (onClick)="openCreate()" />
-  </div>
+<div class="page-card">
+
+  <opera-page-header
+    icon="pi pi-chart-line"
+    iconColor="primary"
+    title="Configuración de Curvas"
+    [subtitle]="'Total: ' + filteredData().length + ' curvas'"
+    (searchChange)="onSearch($event)"
+  />
+
+  <hr class="pw-section-divider" />
+
+  <opera-actions-bar>
+    <opera-filters
+      [options]="categoryOptions()"
+      label="Categoría"
+      [multiple]="true"
+      placeholder="Todas las categorías"
+      (filterChange)="onCategoryFilter($event)"
+    />
+    <button class="pw-btn-consult" type="button" (click)="onConsult()">
+      <i class="pi pi-eye"></i>
+      Consultar
+    </button>
+    <button class="pw-btn-new" type="button" (click)="openCreate()">
+      <i class="pi pi-plus-circle"></i>
+      Nueva Curva
+    </button>
+  </opera-actions-bar>
 
   <opera-table
     [columns]="columns"
-    [data]="$any(curves())"
+    [data]="$any(filteredData())"
     [loading]="loading()"
     (editRow)="onEdit($any($event))"
     (deleteRow)="onDelete($any($event))"
   />
+
 </div>
 
-<!-- Modal crear/editar curva -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL: Crear / Editar Curva
+     ═══════════════════════════════════════════════════════════════════════════ -->
 <opera-dialog
   [(visible)]="dialogVisible"
-  [header]="isEditing() ? 'Editar curva base' : 'Nueva curva base'"
-  width="680px"
+  [header]="editingCurve() ? 'Editar Curva de Entrenamiento' : 'Nueva Curva de Entrenamiento'"
+  width="980px"
+  [draggable]="true"
+  [resizable]="false"
+  (onHide)="onCloseDialog()"
 >
-  <form [formGroup]="form" class="flex flex-col gap-4 py-2">
-    <!-- Datos de la curva -->
-    <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre de la curva *</label>
-        <input pInputText formControlName="curve_Name" class="w-full" />
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Versión</label>
-        <p-inputNumber formControlName="curve_Version" [min]="1" styleClass="w-full" />
-      </div>
-    </div>
 
-    <!-- Semanas -->
-    <div>
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-sm font-semibold">Semanas</h3>
-        <p-button
-          label="Agregar semana"
-          icon="pi pi-plus"
-          size="small"
-          severity="secondary"
-          (onClick)="addWeek()"
-        />
+  <form [formGroup]="curveForm" class="tc-dialog-grid">
+
+    <!-- ── PANEL IZQUIERDO: formulario + semanas ─────────────────────────── -->
+    <div class="tc-form-panel">
+
+      <!-- Nombre -->
+      <div class="pw-form-group">
+        <label class="pw-form-label">Nombre de la curva *</label>
+        <input pInputText formControlName="name_Curve" class="pw-form-input"
+          placeholder="Ej: Curva Básica Ensamble" />
+        @if (curveForm.controls.name_Curve.invalid && curveForm.controls.name_Curve.touched) {
+          <span class="pw-form-error">El nombre es requerido</span>
+        }
       </div>
 
-      <div class="weeks-form-list">
-        @for (weekCtrl of weeksArray.controls; track $index) {
-          <div class="week-form-row" [formGroup]="weekCtrl">
-            <p-inputNumber formControlName="week_Number" [min]="1" placeholder="Sem." styleClass="w-16" />
-            <p-inputNumber formControlName="level" [min]="1" placeholder="Nivel" styleClass="w-16" />
-            <p-inputNumber formControlName="target_Efficiency" [min]="0" [max]="200" suffix="%" placeholder="Ef.%" styleClass="w-24" />
-            <p-inputNumber formControlName="base_Hours" [min]="0" placeholder="Horas" styleClass="w-20" />
-            <p-inputNumber formControlName="base_Pieces" [min]="0" placeholder="Piezas" styleClass="w-20" />
-            <p-button
-              icon="pi pi-trash"
-              severity="danger"
-              [text]="true"
-              [rounded]="true"
-              size="small"
-              (onClick)="removeWeek($index)"
-            />
+      <!-- Descripción -->
+      <div class="pw-form-group">
+        <label class="pw-form-label">Descripción</label>
+        <input pInputText formControlName="description" class="pw-form-input"
+          placeholder="Descripción opcional de la curva" />
+      </div>
+
+      <!-- Toggle Activo -->
+      <div class="tc-toggle-row">
+        <p-toggleSwitch formControlName="isActive" />
+        <span class="tc-toggle-label">
+          {{ curveForm.controls.isActive.value ? 'Activo' : 'Inactivo' }}
+        </span>
+      </div>
+
+      <!-- Semanas -->
+      <div class="tc-weeks-section">
+        <div class="tc-weeks-header">
+          <h4 class="tc-weeks-title">
+            <i class="pi pi-calendar"></i>
+            Configuración por Semanas
+          </h4>
+          <button type="button" class="pw-btn-new tc-btn-add-week" (click)="addWeekRow()">
+            <i class="pi pi-plus-circle"></i>
+            Nueva Semana
+          </button>
+        </div>
+
+        @if (weeksArray.length > 0) {
+          <div class="tc-weeks-scroll" formArrayName="selectedWeeks">
+            <table class="tc-weeks-table">
+              <thead>
+                <tr>
+                  <th>Semana</th>
+                  <th>Horas</th>
+                  <th>Meta (%)</th>
+                  <th>Piezas</th>
+                  <th>Tolerancia (%)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (weekCtrl of weeksArray.controls; track $index) {
+                  <tr [formGroupName]="$index">
+                    <td class="tc-week-num">{{ weekCtrl.controls.level.value }}</td>
+                    <td>
+                      <input type="number" formControlName="base_Hours"
+                        class="tc-week-input" min="1" />
+                    </td>
+                    <td>
+                      <input type="number" formControlName="target_Efficiency"
+                        class="tc-week-input" min="0" max="200" />
+                    </td>
+                    <td>
+                      <input type="number" formControlName="canti_Pieces"
+                        class="tc-week-input" min="0" />
+                    </td>
+                    <td>
+                      <input type="number" formControlName="tolerance"
+                        class="tc-week-input" min="0" max="100" />
+                    </td>
+                    <td>
+                      <button type="button" class="tc-week-delete"
+                        pTooltip="Eliminar semana" tooltipPosition="left"
+                        (click)="onDeleteWeekRow($index)">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="tc-weeks-empty">
+            <i class="pi pi-calendar-times tc-empty-icon"></i>
+            <p>No hay semanas configuradas</p>
+            <span>Haz clic en "Nueva Semana" para comenzar</span>
           </div>
         }
-        @if (weeksArray.length === 0) {
-          <p class="text-sm text-muted-color text-center py-3">
-            Sin semanas — usa "Agregar semana" para comenzar
-          </p>
+      </div>
+
+    </div><!-- /form-panel -->
+
+
+    <!-- ── PANEL DERECHO: categoría + operaciones ────────────────────────── -->
+    <div class="tc-preview-panel">
+
+      <!-- Categoría -->
+      <div class="pw-form-group">
+        <label class="pw-form-label">Categoría *</label>
+        <p-select
+          formControlName="catExenta_AlphaNumId"
+          [options]="categorySelectOptions()"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccionar categoría"
+          styleClass="w-full"
+          (onChange)="onCategoryChange($event.value)"
+        />
+        @if (curveForm.controls.catExenta_AlphaNumId.invalid && curveForm.controls.catExenta_AlphaNumId.touched) {
+          <span class="pw-form-error">Debe seleccionar una categoría</span>
         }
       </div>
-    </div>
+
+      <!-- Operaciones -->
+      @if (selectedCategory()) {
+        <div class="tc-operations-section">
+          <h4 class="tc-ops-title">
+            <i class="pi pi-list"></i>
+            Operaciones a incluir *
+          </h4>
+
+          <!-- Buscador de operaciones -->
+          <div class="tc-ops-search">
+            <i class="pi pi-search tc-ops-search-icon"></i>
+            <input type="text" class="tc-ops-search-input"
+              placeholder="Buscar operación..."
+              [value]="operationsSearch()"
+              (input)="operationsSearch.set($any($event.target).value)" />
+          </div>
+
+          <!-- Lista de operaciones -->
+          <div class="tc-ops-list">
+            @if (filteredOperations().length > 0) {
+              @for (op of filteredOperations(); track op.alphaNumId) {
+                <div
+                  class="tc-op-item"
+                  [class.tc-op-selected]="isOperationSelected(op.alphaNumId)"
+                  (click)="onOperationToggle(op.alphaNumId)"
+                >
+                  <div class="tc-op-check">
+                    @if (isOperationSelected(op.alphaNumId)) {
+                      <i class="pi pi-check-circle"></i>
+                    } @else {
+                      <i class="pi pi-circle"></i>
+                    }
+                  </div>
+                  <div class="tc-op-info">
+                    <span class="tc-op-code">{{ op.alphaNumId }}</span>
+                    <span class="tc-op-name">{{ op.name_Oper }}</span>
+                  </div>
+                </div>
+              }
+            } @else {
+              <div class="tc-ops-empty">
+                <i class="pi pi-search"></i>
+                <span>No se encontraron operaciones</span>
+              </div>
+            }
+          </div>
+
+          <!-- Resumen selección -->
+          @if (selectedOperations().length > 0) {
+            <div class="tc-ops-summary">
+              <i class="pi pi-check-circle"></i>
+              Operación seleccionada:
+              <strong>{{ selectedOperations()[0] }}</strong>
+            </div>
+          } @else {
+            <div class="tc-ops-warn">
+              <i class="pi pi-exclamation-triangle"></i>
+              Selecciona una operación
+            </div>
+          }
+        </div>
+      }
+
+    </div><!-- /preview-panel -->
+
   </form>
 
-  <div footer class="flex justify-end gap-2 pt-2">
-    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
-    <p-button
-      [label]="isEditing() ? 'Guardar cambios' : 'Crear curva'"
-      [loading]="saving()"
-      (onClick)="onSave()"
-    />
+  <!-- ── Footer del modal ──────────────────────────────────────────────── -->
+  <div footer class="tc-dialog-footer flex">
+    <button type="button" class="pw-btn-cancel" (click)="onCloseDialog()">
+      <i class="pi pi-times"></i>
+      Cancelar
+    </button>
+    <button type="button" class="pw-btn-save" [disabled]="saving()" (click)="onSave()">
+      @if (saving()) { <i class="pi pi-spin pi-spinner"></i> }
+      @else { <i class="fa-solid fa-floppy-disk"></i> }
+      {{ editingCurve() ? 'Guardar cambios' : 'Crear curva' }}
+    </button>
   </div>
+
 </opera-dialog>

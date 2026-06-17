@@ -1,90 +1,198 @@
 import {
-  Component, inject, OnInit, signal, computed, effect,
+  Component, computed, inject, OnInit, signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators,
+} from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { TableModule } from 'primeng/table';
-import { TooltipModule } from 'primeng/tooltip';
-import { TagModule } from 'primeng/tag';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
-import { TrainingConfigService } from 'app/core/services/training-config/training-config.service';
-import { ExceptionService } from 'app/core/services/utils/exception.service';
-import { CurveDto, BaseCurve_WeeksDto } from 'app/core/interfaces/training-config/training-config.interface';
+import { ButtonModule }      from 'primeng/button';
+import { InputTextModule }   from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { SelectModule }      from 'primeng/select';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { TooltipModule }     from 'primeng/tooltip';
+
+import { TrainingConfigService }   from 'app/core/services/training-config/training-config.service';
+import { ExceptionService }        from 'app/core/services/utils/exception.service';
+import {
+  CurveDto,
+  BaseCurve_WeeksDto,
+  OperationsCategoriesDto,
+  OperationsDto,
+} from 'app/core/interfaces/training-config/training-config.interface';
+
 import { OperaTableComponent, type Column } from 'app/shared/components/opera-table/opera-table.component';
-import { OperaDialogComponent } from 'app/shared/components/opera-dialog/opera-dialog.component';
+import { OperaDialogComponent }             from 'app/shared/components/opera-dialog/opera-dialog.component';
+import { OperaPageHeaderComponent }         from 'app/shared/components/opera-page-header/opera-page-header.component';
+import { OperaActionsBarComponent }         from 'app/shared/components/opera-actions-bar/opera-actions-bar.component';
+import { OperaFiltersComponent }            from 'app/shared/components/opera-filters/opera-filters.component';
+import { BaseItemFilterOptions }            from 'app/core/interfaces/adm-sys/adm-sys.interface';
+
+// ── Tipos de formulario ──────────────────────────────────────────────────────
 
 interface WeekForm {
-  week_Number:        FormControl<number>;
-  curve_Level:        FormControl<number>;
-  target_Efficiency:  FormControl<number>;
-  base_Hours:         FormControl<number>;
-  base_Pieces:        FormControl<number>;
+  level:             FormControl<number>;
+  base_Hours:        FormControl<number>;
+  target_Efficiency: FormControl<number>;
+  canti_Pieces:      FormControl<number>;
+  tolerance:         FormControl<number>;
 }
 
-interface CurveForm {
-  curve_Description: FormControl<string>;
-  curve_Version: FormControl<number>;
-  weeks:         FormArray<FormGroup<WeekForm>>;
+interface CurveFormType {
+  name_Curve:           FormControl<string>;
+  description:          FormControl<string>;
+  catExenta_AlphaNumId: FormControl<string>;
+  isActive:             FormControl<boolean>;
+  selectedWeeks:        FormArray<FormGroup<WeekForm>>;
 }
 
 @Component({
   selector: 'opera-training-curves-config',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule,
-    ButtonModule, InputTextModule, InputNumberModule,
-    TableModule, TooltipModule, TagModule, ProgressSpinnerModule,
-    OperaTableComponent, OperaDialogComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonModule,
+    InputTextModule,
+    InputNumberModule,
+    SelectModule,
+    ToggleSwitchModule,
+    TooltipModule,
+    OperaTableComponent,
+    OperaDialogComponent,
+    OperaPageHeaderComponent,
+    OperaActionsBarComponent,
+    OperaFiltersComponent,
   ],
   templateUrl: './training-curves.component.html',
   styleUrl: './training-curves.component.scss',
 })
 export class TrainingCurvesConfigComponent implements OnInit {
+
   private readonly _configService    = inject(TrainingConfigService);
   private readonly _exceptionService = inject(ExceptionService);
 
-  // ── Estado ──────────────────────────────────────────────────────────────
-  private readonly _curves = signal<CurveDto[]>([]);
+  // ── Estado global ────────────────────────────────────────────────────────
+  private readonly _curves      = signal<CurveDto[]>([]);
+  private readonly _categories  = signal<OperationsCategoriesDto[]>([]);
+  private readonly _operations  = signal<OperationsDto[]>([]);
+  private readonly _search      = signal<string>('');
+  private readonly _catFilter   = signal<string[]>([]);
 
-  readonly loading       = signal<boolean>(false);
-  readonly saving        = signal<boolean>(false);
-  readonly dialogVisible = signal<boolean>(false);
-  readonly isEditing     = signal<boolean>(false);
-  readonly curves        = this._curves.asReadonly();
+  readonly loading        = signal<boolean>(false);
+  readonly saving         = signal<boolean>(false);
+  readonly dialogVisible  = signal<boolean>(false);
+  readonly editingCurve   = signal<CurveDto | null>(null);
 
-  // ── Tabla ──────────────────────────────────────────────────────────────
+  // ── Estado del modal ─────────────────────────────────────────────────────
+  readonly operationsSearch    = signal<string>('');
+  readonly selectedOperations  = signal<string[]>([]);
+  // Necesario porque FormControl.value no es un Signal (computed no lo detecta)
+  private readonly _selectedCategory = signal<string>('');
+  readonly selectedCategory          = this._selectedCategory.asReadonly();
+
+  // ── Computed ─────────────────────────────────────────────────────────────
+
+  readonly filteredData = computed(() => {
+    const q    = this._search().toLowerCase();
+    const cats = this._catFilter();
+    return this._curves().filter(c => {
+      const matchCat = cats.length === 0 || cats.includes(c.catExenta_AlphaNumId);
+      const matchQ   = !q
+        || (c.code ?? '').toLowerCase().includes(q)
+        || c.name_Curve.toLowerCase().includes(q)
+        || (c.description ?? '').toLowerCase().includes(q)
+        || c.catExenta_AlphaNumId.toLowerCase().includes(q);
+      return matchCat && matchQ;
+    });
+  });
+
+  readonly categoryOptions = computed<BaseItemFilterOptions[]>(() =>
+    [...new Set(this._curves().map(c => c.catExenta_AlphaNumId))]
+      .map(id => ({ valueKey: id, description: id })),
+  );
+
+  readonly categorySelectOptions = computed(() =>
+    this._categories().map(cat => ({ label: cat.alphaNumId, value: cat.alphaNumId })),
+  );
+
+  readonly filteredOperations = computed(() => {
+    const cat  = this._selectedCategory();
+    const term = this.operationsSearch().toLowerCase();
+    if (!cat) return [];
+    return this._operations()
+      .filter(op => op.operationCategory_Name === cat)
+      .filter(op =>
+        !term ||
+        op.alphaNumId.toLowerCase().includes(term) ||
+        op.name_Oper.toLowerCase().includes(term),
+      );
+  });
+
+  // ── Tabla ────────────────────────────────────────────────────────────────
+
   readonly columns: Column[] = [
-    { field: 'curve_Code',    header: 'Código',  type: 'text',    width: '140px', sortable: true },
-    { field: 'curve_Name',    header: 'Nombre',  type: 'text',    sortable: true },
-    { field: 'curve_Version', header: 'Versión', type: 'number',  width: '90px' },
-    { field: 'total_Weeks',   header: 'Semanas', type: 'number',  width: '90px' },
-    { field: 'actions',       header: 'Acciones', type: 'actions', width: '100px' },
+    { field: 'code',                 header: 'Código',      type: 'text',    width: '150px', sortable: true },
+    { field: 'name_Curve',           header: 'Nombre',      type: 'text',    sortable: true },
+    { field: 'catExenta_AlphaNumId', header: 'Categoría',   type: 'badge',   width: '130px',
+      badgeClass: () => 'status-badge en-proceso' },
+    { field: 'canti_Semanas',        header: 'Semanas',     type: 'number',  width: '90px'  },
+    { field: 'canti_Opers',          header: 'Operaciones', type: 'number',  width: '110px' },
+    { field: 'isActive',             header: 'Estado',      type: 'boolean', width: '90px'  },
+    {
+      field: 'actions', header: 'Acciones', type: 'actions', width: '120px',
+      actions: [
+        { icon: 'fa-solid fa-pencil', tooltip: 'Editar',   color: 'primary', action: 'edit'   },
+        { icon: 'fa-solid fa-trash',  tooltip: 'Eliminar', color: 'danger',  action: 'delete' },
+      ],
+    },
   ];
 
-  // ── Formulario ──────────────────────────────────────────────────────────
-  readonly form = new FormGroup<CurveForm>({
-    curve_Description: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    curve_Version: new FormControl(1,  { nonNullable: true, validators: [Validators.required] }),
-    weeks:         new FormArray<FormGroup<WeekForm>>([]),
+  // ── Formulario ────────────────────────────────────────────────────────────
+
+  readonly curveForm = new FormGroup<CurveFormType>({
+    name_Curve:           new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    description:          new FormControl('', { nonNullable: true }),
+    catExenta_AlphaNumId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    isActive:             new FormControl(true, { nonNullable: true }),
+    selectedWeeks:        new FormArray<FormGroup<WeekForm>>([]),
   });
 
   get weeksArray(): FormArray<FormGroup<WeekForm>> {
-    return this.form.controls.weeks;
+    return this.curveForm.controls.selectedWeeks;
   }
 
-  private _editingCode: string | null = null;
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────
   ngOnInit(): void {
-    this._loadCurves();
+    this._loadAll();
   }
 
-  private async _loadCurves(): Promise<void> {
+  private async _loadAll(): Promise<void> {
+    this.loading.set(true);
+    try {
+      const [curvesRes, categories, operations] = await Promise.all([
+        firstValueFrom(this._configService.getCurves$()),
+        firstValueFrom(this._configService.getCategories$()),
+        firstValueFrom(this._configService.getOperationsByCategory$()),
+      ]);
+      if (curvesRes.success) this._curves.set(curvesRes.curves ?? []);
+      this._categories.set(categories);
+      this._operations.set(operations);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  // ── Handlers de la tabla ──────────────────────────────────────────────────
+
+  onSearch(term: string): void { this._search.set(term); }
+
+  onCategoryFilter(values: string[]): void { this._catFilter.set(values); }
+
+  async onConsult(): Promise<void> {
     this.loading.set(true);
     try {
       const res = await firstValueFrom(this._configService.getCurves$());
@@ -94,75 +202,143 @@ export class TrainingCurvesConfigComponent implements OnInit {
     }
   }
 
-  // ── Weeks FormArray helpers ───────────────────────────────────────────
+  // ── Semanas (FormArray) ───────────────────────────────────────────────────
+
   private _buildWeekGroup(week?: Partial<BaseCurve_WeeksDto>): FormGroup<WeekForm> {
+    const nextLevel = this.weeksArray.length + 1;
     return new FormGroup<WeekForm>({
-      week_Number:       new FormControl(week?.week_Number ?? (this.weeksArray.length + 1), { nonNullable: true }),
-      curve_Level:       new FormControl(week?.curve_Level ?? 1, { nonNullable: true }),
-      target_Efficiency: new FormControl(week?.target_Efficiency ?? 0, { nonNullable: true }),
-      base_Hours:        new FormControl(week?.base_Hours ?? 40, { nonNullable: true }),
-      base_Pieces:       new FormControl(week?.base_Pieces ?? 0, { nonNullable: true }),
+      level:             new FormControl(week?.level ?? nextLevel,   { nonNullable: true }),
+      base_Hours:        new FormControl(week?.base_Hours ?? 44,     { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
+      target_Efficiency: new FormControl(week?.target_Efficiency ?? 0, { nonNullable: true, validators: [Validators.required] }),
+      canti_Pieces:      new FormControl(week?.canti_Pieces ?? 0,   { nonNullable: true, validators: [Validators.required] }),
+      tolerance:         new FormControl(week?.tolerance ?? 10,      { nonNullable: true, validators: [Validators.required] }),
     });
   }
 
-  addWeek(): void {
+  addWeekRow(): void {
     this.weeksArray.push(this._buildWeekGroup());
   }
 
-  removeWeek(index: number): void {
+  onDeleteWeekRow(index: number): void {
     this.weeksArray.removeAt(index);
+    // Renumber levels
+    this.weeksArray.controls.forEach((g, i) => {
+      g.controls.level.setValue(i + 1);
+    });
   }
 
-  // ── CRUD ────────────────────────────────────────────────────────────────
+  // ── Operaciones (single-select) ───────────────────────────────────────────
+
+  onOperationToggle(alphaNumId: string): void {
+    const current = this.selectedOperations();
+    const isSelected = current[0] === alphaNumId;
+    this.selectedOperations.set(isSelected ? [] : [alphaNumId]);
+  }
+
+  isOperationSelected(alphaNumId: string): boolean {
+    return this.selectedOperations()[0] === alphaNumId;
+  }
+
+  onCategoryChange(newCat: string): void {
+    this._selectedCategory.set(newCat ?? '');
+    this.selectedOperations.set([]);
+    this.operationsSearch.set('');
+  }
+
+  // ── CRUD ──────────────────────────────────────────────────────────────────
+
   openCreate(): void {
-    this.isEditing.set(false);
-    this._editingCode = null;
+    this.editingCurve.set(null);
     this.weeksArray.clear();
-    this.form.reset({ curve_Description: '', curve_Version: 1 });
-    this.addWeek();
+    this.selectedOperations.set([]);
+    this.operationsSearch.set('');
+    this._selectedCategory.set('');
+    this.curveForm.reset({ isActive: true });
+    this.curveForm.controls.catExenta_AlphaNumId.enable();
+    this.addWeekRow();
     this.dialogVisible.set(true);
   }
 
   onEdit(curve: CurveDto): void {
-    this.isEditing.set(true);
-    this._editingCode = curve.curve_Code;
+    this.editingCurve.set(curve);
     this.weeksArray.clear();
-    this.form.patchValue({ curve_Description: curve.curve_Description, curve_Version: curve.curve_Version });
-    (curve.weeks ?? []).forEach(w => this.weeksArray.push(this._buildWeekGroup(w)));
+    this.selectedOperations.set([...(curve.selectedOperations ?? [])]);
+    this.operationsSearch.set('');
+
+    this.curveForm.patchValue({
+      name_Curve:           curve.name_Curve,
+      description:          curve.description ?? '',
+      catExenta_AlphaNumId: curve.catExenta_AlphaNumId,
+      isActive:             curve.isActive,
+    });
+
+    // Disable category on edit (same as PAYWEB) + sync signal
+    this._selectedCategory.set(curve.catExenta_AlphaNumId);
+    this.curveForm.controls.catExenta_AlphaNumId.disable();
+
+    (curve.selectedWeeks ?? []).forEach(w => this.weeksArray.push(this._buildWeekGroup(w)));
+
     this.dialogVisible.set(true);
+  }
+
+  onCloseDialog(): void {
+    this.dialogVisible.set(false);
+    this.curveForm.controls.catExenta_AlphaNumId.enable();
+    this._selectedCategory.set('');
+    this.selectedOperations.set([]);
+    this.weeksArray.clear();
   }
 
   async onDelete(curve: CurveDto): Promise<void> {
     const confirmed = await this._exceptionService.askConfirmation(
-      `¿Eliminar la curva <b>${curve.curve_Code}</b>?`,
+      `¿Eliminar la curva <b>${curve.code} - ${curve.name_Curve}</b>?`,
     );
     if (!confirmed) return;
-    // Eliminar todas las semanas de la primera operación (simplificado)
-    // En producción se haría por cada semana/nivel
-    this._exceptionService.showSuccess('Curva eliminada (mock)');
-    await this._loadCurves();
+
+    const res = await firstValueFrom(this._configService.deleteCurve$(curve.code!));
+    this._exceptionService.showToastResult(res);
+    if (res.success) {
+      const updated = await firstValueFrom(this._configService.getCurves$());
+      if (updated.success) this._curves.set(updated.curves);
+    }
   }
 
   async onSave(): Promise<void> {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.curveForm.invalid) { this.curveForm.markAllAsTouched(); return; }
+    if (this.selectedOperations().length === 0) {
+      this._exceptionService.showError('Debe seleccionar al menos una operación.');
+      return;
+    }
+    if (this.weeksArray.length === 0) {
+      this._exceptionService.showError('Debe agregar al menos una semana.');
+      return;
+    }
 
     this.saving.set(true);
     try {
-      const { curve_Description, curve_Version, weeks } = this.form.getRawValue();
-      const body: Partial<CurveDto> = {
-        curve_Description,
-        curve_Version,
-        weeks: (weeks as Array<{ week_Number: number; curve_Level: number; target_Efficiency: number; base_Hours: number; base_Pieces: number }>).map(w => ({ week_Number: w.week_Number, curve_Level: w.curve_Level, target_Efficiency: w.target_Efficiency, base_Hours: w.base_Hours, base_Pieces: w.base_Pieces })) as BaseCurve_WeeksDto[],
+      const raw   = this.curveForm.getRawValue();
+      const weeks = this.weeksArray.getRawValue() as BaseCurve_WeeksDto[];
+      const body: Omit<CurveDto, 'code'> = {
+        name_Curve:           raw.name_Curve,
+        description:          raw.description,
+        catExenta_AlphaNumId: raw.catExenta_AlphaNumId,
+        isActive:             raw.isActive,
+        selectedWeeks:        weeks,
+        selectedOperations:   this.selectedOperations(),
+        canti_Semanas:        weeks.length,
+        canti_Opers:          this.selectedOperations().length,
       };
 
-      const res = this.isEditing() && this._editingCode
-        ? await firstValueFrom(this._configService.updateCurve$({ ...body, curve_Code: this._editingCode } as CurveDto))
-        : await firstValueFrom(this._configService.createCurve$(body as Omit<CurveDto, 'curve_Code'>));
+      const editing = this.editingCurve();
+      const res = editing
+        ? await firstValueFrom(this._configService.updateCurve$({ ...body, code: editing.code }))
+        : await firstValueFrom(this._configService.createCurve$(body));
 
       this._exceptionService.showToastResult(res);
       if (res.success) {
-        this.dialogVisible.set(false);
-        await this._loadCurves();
+        this.onCloseDialog();
+        const updated = await firstValueFrom(this._configService.getCurves$());
+        if (updated.success) this._curves.set(updated.curves);
       }
     } finally {
       this.saving.set(false);

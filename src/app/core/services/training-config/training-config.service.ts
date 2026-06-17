@@ -1,47 +1,76 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from 'environments/environment';
-import { ExceptionService } from 'app/core/services/utils/exception.service';
+import { Injectable, signal } from '@angular/core';
+import { Observable, of } from 'rxjs';
+
 import {
   CurveDto,
+  OperationsCategoriesDto,
+  OperationsDto,
   ResponseCurvesDto,
 } from 'app/core/interfaces/training-config/training-config.interface';
 import { ExecutionResponse } from 'app/core/interfaces/exceptions/exceptions.interface';
+import {
+  MOCK_CATEGORIES,
+  MOCK_CURVES,
+  MOCK_OPERATIONS,
+} from 'app/core/mock/data/training-config.mock';
 
 @Injectable({ providedIn: 'root' })
 export class TrainingConfigService {
-  private readonly _http             = inject(HttpClient);
-  private readonly _exceptionService = inject(ExceptionService);
-  private readonly _apiUrl           = environment.apiURL + 'TrainingConfig/';
+
+  // ── In-memory state ───────────────────────────────────────────────────────
+  private readonly _curves = signal<CurveDto[]>(
+    MOCK_CURVES.map(c => ({ ...c, selectedWeeks: [...c.selectedWeeks] })),
+  );
+
+  // ── Lectura ───────────────────────────────────────────────────────────────
 
   getCurves$(): Observable<ResponseCurvesDto> {
-    return this._http
-      .get<ResponseCurvesDto>(`${this._apiUrl}training-config`)
-      .pipe(this._exceptionService.handleExecutionError());
+    return of({ success: true, curves: this._curves() });
   }
 
-  createCurve$(body: Omit<CurveDto, 'curve_Code'>): Observable<ExecutionResponse> {
-    return this._http
-      .post<ExecutionResponse>(`${this._apiUrl}training-config`, body)
-      .pipe(this._exceptionService.handleExecutionError());
+  getCategories$(): Observable<OperationsCategoriesDto[]> {
+    return of([...MOCK_CATEGORIES]);
+  }
+
+  getOperationsByCategory$(): Observable<OperationsDto[]> {
+    return of([...MOCK_OPERATIONS]);
+  }
+
+  // ── Escritura ─────────────────────────────────────────────────────────────
+
+  createCurve$(body: Omit<CurveDto, 'code'>): Observable<ExecutionResponse> {
+    const cat       = body.catExenta_AlphaNumId;
+    const existing  = this._curves().filter(c => c.catExenta_AlphaNumId === cat);
+    const nextNum   = String(existing.length + 1).padStart(3, '0');
+    const code      = `C_${cat}_${nextNum}`;
+
+    const newCurve: CurveDto = {
+      ...body,
+      code,
+      canti_Semanas: body.selectedWeeks.length,
+      canti_Opers:   body.selectedOperations.length,
+    };
+
+    this._curves.update(list => [...list, newCurve]);
+    return of({ success: true, successMessage: 'Curva creada exitosamente.' });
   }
 
   updateCurve$(body: CurveDto): Observable<ExecutionResponse> {
-    return this._http
-      .patch<ExecutionResponse>(`${this._apiUrl}training-config`, body)
-      .pipe(this._exceptionService.handleExecutionError());
+    this._curves.update(list =>
+      list.map(c => c.code === body.code
+        ? {
+            ...body,
+            canti_Semanas: body.selectedWeeks.length,
+            canti_Opers:   body.selectedOperations.length,
+          }
+        : c,
+      ),
+    );
+    return of({ success: true, successMessage: 'Curva actualizada exitosamente.' });
   }
 
-  deleteWeek$(curveCode: string, opExentaId: string, level: number): Observable<ExecutionResponse> {
-    return this._http
-      .delete<ExecutionResponse>(`${this._apiUrl}training-config-week`, {
-        params: {
-          curve_Code:          curveCode,
-          opExenta_AlphaNumId: opExentaId,
-          level:               level,
-        },
-      })
-      .pipe(this._exceptionService.handleExecutionError());
+  deleteCurve$(code: string): Observable<ExecutionResponse> {
+    this._curves.update(list => list.filter(c => c.code !== code));
+    return of({ success: true, successMessage: 'Curva eliminada exitosamente.' });
   }
 }
