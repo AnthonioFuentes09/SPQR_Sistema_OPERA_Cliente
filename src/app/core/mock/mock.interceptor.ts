@@ -1,7 +1,8 @@
 import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { of, delay } from 'rxjs';
 import { environment } from 'environments/environment';
-import { MOCK_AUTH_RESPONSE, MOCK_NAVIGATION }   from 'app/core/mock/data/auth.mock';
+import { AuthSignInRequest, AuthSignInResponse } from 'app/core/interfaces/auth/auth.interface';
+import { MOCK_AUTH_RESPONSE, MOCK_NAVIGATION, MOCK_AUTH_USERS } from 'app/core/mock/data/auth.mock';
 import { MOCK_USERS, MOCK_ROLES, MOCK_ACCESSES } from 'app/core/mock/data/security.mock';
 import {
   MOCK_ASSIGNMENTS, MOCK_TRACKING, MOCK_OPERATORS,
@@ -26,7 +27,32 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
   const method = req.method;
 
   // ── Auth ────────────────────────────────────────────────────────────────────
-  if (url.includes('Auth/SignIn') || url.includes('Auth/SignInWithToken'))
+  if (url.includes('Auth/SignIn')) {
+    const credentials = req.body as AuthSignInRequest;
+    const user = MOCK_AUTH_USERS.find(u =>
+      u.employee_Code === credentials.employee_Code &&
+      u.password === credentials.password &&
+      u.company_Code === credentials.company_Code
+    );
+
+    if (!user) {
+      return respond({ success: false, errorMessage: 'Credenciales incorrectas. Intente nuevamente.' }, 401);
+    }
+
+    return respond({
+      success:      true,
+      accessToken:  'mock.jwt.token.access',
+      refreshToken: 'mock.jwt.token.refresh',
+      access:       user.access,
+      roles:        user.roles,
+      user_Code:    user.user_Code,
+      user_Name:    user.user_Name,
+      user_Email:   user.user_Email,
+      company_Code: user.company_Code,
+    } as AuthSignInResponse);
+  }
+
+  if (url.includes('Auth/SignInWithToken'))
     return respond(MOCK_AUTH_RESPONSE);
 
   if (url.includes('Auth/RefreshToken'))
@@ -40,10 +66,72 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
 
   // ── Security: Users ─────────────────────────────────────────────────────────
   if (url.includes('Security/Users') || url.includes('Security/users')) {
-    if (method === 'GET')   return respond({ success: true, users: MOCK_USERS });
-    if (method === 'POST')  return respond({ success: true, successMessage: 'Usuario creado correctamente.' });
-    if (method === 'PATCH') return respond({ success: true, successMessage: 'Usuario actualizado correctamente.' });
-    if (method === 'DELETE')return respond({ success: true, successMessage: 'Usuario eliminado correctamente.' });
+    if (method === 'GET') {
+      return respond({ success: true, users: MOCK_USERS });
+    }
+
+    if (method === 'POST') {
+      const body = req.body as any;
+      const code = (body.employee_Code ?? body.user_Code ?? '').trim();
+      if (!code) {
+        return respond({ success: false, errorMessage: 'El código de empleado es obligatorio.' }, 400);
+      }
+
+      if (MOCK_USERS.some(u => (u.employee_Code ?? '').toLowerCase() === code.toLowerCase())) {
+        return respond({ success: false, errorMessage: 'El código de empleado ya está en uso por otro usuario.' }, 400);
+      }
+
+      const nextId = Math.max(0, ...MOCK_USERS.map(u => u.user_Id)) + 1;
+      MOCK_USERS.push({
+        user_Id:       nextId,
+        user_Code:     code,
+        employee_Code: code,
+        user_Name:     body.user_Name ?? '',
+        user_Email:    body.user_Email ?? '',
+        company_Code:  body.company_Code ?? 'IMHON',
+        role_Id:       body.role_Id,
+        role_Name:     body.role_Name,
+        is_Active:     body.is_Active ?? true,
+        is_Deleted:    body.is_Deleted ?? false,
+      });
+
+      return respond({ success: true, successMessage: 'Usuario creado correctamente.' });
+    }
+
+    if (method === 'PUT') {
+      const body = req.body as any;
+      const userId = Number(body.user_Id ?? 0);
+      const index = MOCK_USERS.findIndex(u => u.user_Id === userId);
+      if (index < 0) return respond({ success: false, errorMessage: 'Usuario no encontrado.' }, 404);
+
+      const code = (body.employee_Code ?? body.user_Code ?? MOCK_USERS[index].employee_Code ?? '').trim();
+      if (!code) {
+        return respond({ success: false, errorMessage: 'El código de empleado es obligatorio.' }, 400);
+      }
+
+      if (MOCK_USERS.some(u => u.user_Id !== userId && (u.employee_Code ?? '').toLowerCase() === code.toLowerCase())) {
+        return respond({ success: false, errorMessage: 'El código de empleado ya está en uso por otro usuario.' }, 400);
+      }
+
+      MOCK_USERS[index] = {
+        ...MOCK_USERS[index],
+        ...body,
+        user_Code:     code,
+        employee_Code: code,
+      };
+
+      return respond({ success: true, successMessage: 'Usuario actualizado correctamente.' });
+    }
+
+    if (method === 'DELETE') {
+      const userId = Number(req.params.get('user_Id') ?? 0);
+      const index = MOCK_USERS.findIndex(u => u.user_Id === userId);
+      if (index >= 0) {
+        MOCK_USERS.splice(index, 1);
+        return respond({ success: true, successMessage: 'Usuario eliminado correctamente.' });
+      }
+      return respond({ success: false, errorMessage: 'Usuario no encontrado.' }, 404);
+    }
   }
 
   // ── Security: Roles ─────────────────────────────────────────────────────────

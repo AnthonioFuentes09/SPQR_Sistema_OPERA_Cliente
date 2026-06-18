@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { InputTextModule } from 'primeng/inputtext';
 
@@ -82,7 +82,10 @@ export class UsersComponent implements OnInit {
 
   // ── Formulario ──────────────────────────────────────────────────────────
   readonly form = new FormGroup<UserForm>({
-    employee_Code: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    employee_Code: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, this._employeeCodeUniqueValidator.bind(this)],
+    }),
     user_Name:     new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     user_Email:    new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
     role_Id:       new FormControl(0,  { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
@@ -90,6 +93,18 @@ export class UsersComponent implements OnInit {
   });
 
   private _editingId: number | null = null;
+
+  private _employeeCodeUniqueValidator(control: AbstractControl): ValidationErrors | null {
+    const code = (control.value ?? '').toString().trim();
+    if (!code) return null;
+
+    const duplicate = this._users().some(u =>
+      u.employee_Code?.trim().toLowerCase() === code.toLowerCase() &&
+      u.user_Id !== this._editingId,
+    );
+
+    return duplicate ? { duplicateEmployeeCode: true } : null;
+  }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────
   ngOnInit(): void {
@@ -117,6 +132,7 @@ export class UsersComponent implements OnInit {
     this._editingId = null;
     this.drawerSubtitle.set('');
     this.form.reset({ is_Active: true });
+    this.form.controls.employee_Code.updateValueAndValidity();
     this.drawerVisible.set(true);
   }
 
@@ -131,6 +147,7 @@ export class UsersComponent implements OnInit {
       role_Id:       user.role_Id ?? 0,
       is_Active:     user.is_Active,
     });
+    this.form.controls.employee_Code.updateValueAndValidity();
     this.drawerVisible.set(true);
   }
 
@@ -151,9 +168,17 @@ export class UsersComponent implements OnInit {
       return;
     }
 
+    const values = this.form.getRawValue();
+    const employee_CodeControl = this.form.controls.employee_Code;
+    employee_CodeControl.updateValueAndValidity();
+
+    if (employee_CodeControl.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
     this.saving.set(true);
     try {
-      const values = this.form.getRawValue();
       const res = this.isEditing() && this._editingId !== null
         ? await firstValueFrom(this._securityService.updateUser$({
             ...values,

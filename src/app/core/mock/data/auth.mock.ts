@@ -1,5 +1,49 @@
 import { AuthSignInResponse } from 'app/core/interfaces/auth/auth.interface';
 
+interface MockAuthUser {
+  employee_Code: string;
+  password:      string;
+  company_Code:  string;
+  user_Code:     string;
+  user_Name:     string;
+  user_Email:    string;
+  access:        string;
+  roles:         string[];
+}
+
+export const MOCK_AUTH_USERS: MockAuthUser[] = [
+  {
+    employee_Code: 'U001',
+    password:      'Password123',
+    company_Code:  'IMHON',
+    user_Code:     'U001',
+    user_Name:     'Antonio Fuentes',
+    user_Email:    'afuentes@imhon.com',
+    access:        'security.users,security.roles,security.access,training.assignment,training.tracking,training.requests,training.operators,training.config,adm-sys.actions,adm-sys.displays,adm-sys.entities',
+    roles:         ['Administrador'],
+  },
+  {
+    employee_Code: 'U002',
+    password:      'Secret2024',
+    company_Code:  'IMHON',
+    user_Code:     'U002',
+    user_Name:     'María López',
+    user_Email:    'mlopez@imhon.com',
+    access:        'training.assignment,training.tracking,training.operators',
+    roles:         ['Instructor'],
+  },
+  {
+    employee_Code: 'U003',
+    password:      'Clave321',
+    company_Code:  'IMHON',
+    user_Code:     'U003',
+    user_Name:     'Carlos Hernández',
+    user_Email:    'chernandez@imhon.com',
+    access:        'training.requests',
+    roles:         ['Supervisor'],
+  },
+];
+
 export const MOCK_AUTH_RESPONSE: AuthSignInResponse = {
   success:      true,
   accessToken:  'mock.jwt.token.access',

@@ -54,24 +54,59 @@
           <label class="pw-form-label">Código empleado *</label>
           <input pInputText formControlName="employee_Code" class="pw-form-input"
             [readonly]="isEditing()" placeholder="Ingrese código" />
+          @if (form.controls.employee_Code.touched && form.controls.employee_Code.hasError('required')) {
+            <div class="pw-form-error text-danger mt-1">
+              El código de empleado no puede estar vacío.
+            </div>
+          }
+          @if (form.controls.employee_Code.touched && form.controls.employee_Code.hasError('duplicateEmployeeCode')) {
+            <div class="pw-form-error text-danger mt-1">
+              El código de empleado ya está en uso por otro usuario.
+            </div>
+          }
         </div>
 
         <div class="pw-form-group">
           <label class="pw-form-label">Nombre completo *</label>
           <input pInputText formControlName="user_Name" class="pw-form-input"
             placeholder="Nombre del usuario" />
+          @if (form.controls.user_Name.touched && form.controls.user_Name.hasError('required')) {
+            <div class="pw-form-error text-danger mt-1">
+              El nombre completo no puede estar vacío.
+            </div>
+          }
         </div>
 
         <div class="pw-form-group">
           <label class="pw-form-label">Email *</label>
           <input pInputText type="email" formControlName="user_Email" class="pw-form-input"
             placeholder="correo@empresa.com" />
+          @if (form.controls.user_Email.touched && form.controls.user_Email.hasError('required')) {
+            <div class="pw-form-error text-danger mt-1">
+              El email no puede estar vacío.
+            </div>
+          }
+          @if (form.controls.user_Email.touched && form.controls.user_Email.hasError('email')) {
+            <div class="pw-form-error text-danger mt-1">
+              El email debe tener un formato válido.
+            </div>
+          }
         </div>
 
         <div class="pw-form-group">
           <label class="pw-form-label">ID Rol *</label>
           <input pInputText type="number" formControlName="role_Id" class="pw-form-input"
             placeholder="ID del rol" />
+          @if (form.controls.role_Id.touched && form.controls.role_Id.hasError('required')) {
+            <div class="pw-form-error text-danger mt-1">
+              El ID de rol no puede estar vacío.
+            </div>
+          }
+          @if (form.controls.role_Id.touched && form.controls.role_Id.hasError('min')) {
+            <div class="pw-form-error text-danger mt-1">
+              El ID de rol debe ser mayor que 0.
+            </div>
+          }
         </div>
       </div>
     </div>
