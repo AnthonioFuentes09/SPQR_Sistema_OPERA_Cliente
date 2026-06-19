@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
 
 import { SecurityService } from 'app/core/services/security/security.service';
 import { ExceptionService } from 'app/core/services/utils/exception.service';
@@ -27,6 +28,7 @@ interface UserForm {
     CommonModule,
     ReactiveFormsModule,
     InputTextModule,
+    DropdownModule,
     OperaTableComponent,
     OperaDrawerComponent,
     OperaPageHeaderComponent,
@@ -60,6 +62,14 @@ export class UsersComponent implements OnInit {
         (u.employee_Code ?? '').toLowerCase().includes(q),
     );
   });
+
+  // ── Roles disponibles ─────────────────────────────────────────────────────
+  readonly roles = signal([
+    { label: 'Admin',       value: 1 },
+    { label: 'Instructor',  value: 2 },
+    { label: 'Supervisor',  value: 3 },
+    { label: 'Viewer',      value: 4 },
+  ]);
 
   // ── Tabla (botones estilo PAYWEB) ────────────────────────────────────────
   readonly columns: Column[] = [

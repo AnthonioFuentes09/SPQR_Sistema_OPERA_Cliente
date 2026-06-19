@@ -67,7 +67,15 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
   // ── Security: Users ─────────────────────────────────────────────────────────
   if (url.includes('Security/Users') || url.includes('Security/users')) {
     if (method === 'GET') {
-      return respond({ success: true, users: MOCK_USERS });
+      // Map role_Name based on role_Id
+      const usersWithRoles = MOCK_USERS.map(user => {
+        const role = MOCK_ROLES.find(r => r.role_Id === user.role_Id);
+        return {
+          ...user,
+          role_Name: role?.role_Code ?? 'Viewer',
+        };
+      });
+      return respond({ success: true, users: usersWithRoles });
     }
 
     if (method === 'POST') {
@@ -82,6 +90,7 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       const nextId = Math.max(0, ...MOCK_USERS.map(u => u.user_Id)) + 1;
+      const role = MOCK_ROLES.find(r => r.role_Id === body.role_Id);
       MOCK_USERS.push({
         user_Id:       nextId,
         user_Code:     code,
@@ -90,7 +99,7 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
         user_Email:    body.user_Email ?? '',
         company_Code:  body.company_Code ?? 'IMHON',
         role_Id:       body.role_Id,
-        role_Name:     body.role_Name,
+        role_Name:     role?.role_Code ?? 'Viewer',
         is_Active:     body.is_Active ?? true,
         is_Deleted:    body.is_Deleted ?? false,
       });
@@ -112,12 +121,13 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
       if (MOCK_USERS.some(u => u.user_Id !== userId && (u.employee_Code ?? '').toLowerCase() === code.toLowerCase())) {
         return respond({ success: false, errorMessage: 'El código de empleado ya está en uso por otro usuario.' }, 400);
       }
-
+      const role = MOCK_ROLES.find(r => r.role_Id === (body.role_Id ?? MOCK_USERS[index].role_Id));
       MOCK_USERS[index] = {
         ...MOCK_USERS[index],
         ...body,
         user_Code:     code,
         employee_Code: code,
+        role_Name:     role?.role_Code ?? 'Viewer',
       };
 
       return respond({ success: true, successMessage: 'Usuario actualizado correctamente.' });

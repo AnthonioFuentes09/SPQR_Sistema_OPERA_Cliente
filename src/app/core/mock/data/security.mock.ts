@@ -1,11 +1,11 @@
 import { UserDTO, RoleDTO, AccessDTO } from 'app/core/interfaces/security/security.interface';
 
 export const MOCK_USERS: UserDTO[] = [
-  { user_Id: 1, user_Code: 'U001', employee_Code: 'U001', user_Name: 'Antonio Fuentes',   user_Email: 'afuentes@imhon.com',   company_Code: 'IMHON', is_Active: true,  is_Deleted: false },
-  { user_Id: 2, user_Code: 'U002', employee_Code: 'U002', user_Name: 'María López',       user_Email: 'mlopez@imhon.com',     company_Code: 'IMHON', is_Active: true,  is_Deleted: false },
-  { user_Id: 3, user_Code: 'U003', employee_Code: 'U003', user_Name: 'Carlos Hernández',  user_Email: 'chernandez@imhon.com', company_Code: 'IMHON', is_Active: true,  is_Deleted: false },
-  { user_Id: 4, user_Code: 'U004', employee_Code: 'U004', user_Name: 'Sofía Martínez',    user_Email: 'smartinez@imhon.com',  company_Code: 'IMHON', is_Active: false, is_Deleted: false },
-  { user_Id: 5, user_Code: 'U005', employee_Code: 'U005', user_Name: 'Javier Rodríguez',  user_Email: 'jrodriguez@imhon.com', company_Code: 'IMHON', is_Active: true,  is_Deleted: false },
+  { user_Id: 1, user_Code: 'U001', employee_Code: 'U001', user_Name: 'Antonio Fuentes',   user_Email: 'afuentes@imhon.com',   company_Code: 'IMHON', role_Id: 1, role_Name: 'ADMIN',       is_Active: true,  is_Deleted: false },
+  { user_Id: 2, user_Code: 'U002', employee_Code: 'U002', user_Name: 'María López',       user_Email: 'mlopez@imhon.com',     company_Code: 'IMHON', role_Id: 2, role_Name: 'INSTRUCTOR',  is_Active: true,  is_Deleted: false },
+  { user_Id: 3, user_Code: 'U003', employee_Code: 'U003', user_Name: 'Carlos Hernández',  user_Email: 'chernandez@imhon.com', company_Code: 'IMHON', role_Id: 3, role_Name: 'SUPERVISOR',  is_Active: true,  is_Deleted: false },
+  { user_Id: 4, user_Code: 'U004', employee_Code: 'U004', user_Name: 'Sofía Martínez',    user_Email: 'smartinez@imhon.com',  company_Code: 'IMHON', role_Id: 4, role_Name: 'VIEWER',      is_Active: false, is_Deleted: false },
+  { user_Id: 5, user_Code: 'U005', employee_Code: 'U005', user_Name: 'Javier Rodríguez',  user_Email: 'jrodriguez@imhon.com', company_Code: 'IMHON', role_Id: 2, role_Name: 'INSTRUCTOR',  is_Active: true,  is_Deleted: false },
 ];
 
 export const MOCK_ROLES: RoleDTO[] = [
