@@ -1,11 +1,320 @@
-opera-curve-tracking {
-  .row-current-week {
-    background-color: var(--p-primary-50) !important;
-    font-weight: 600;
+.curve-tracking {
+
+  // ── Barra de acciones ────────────────────────────────────────────────────────
+  .ct-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
   }
 
-  .row-saved {
-    background-color: var(--p-green-50) !important;
-    transition: background-color 2s ease-out;
+  .ct-instructor-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--corporate-primary);
+    background: #e8f0fa;
+    border: 1px solid #c8daf5;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-weight: 500;
+    i { font-size: 12px; }
+  }
+
+  // ── Loading ──────────────────────────────────────────────────────────────────
+  .ct-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 56px 0;
+    color: #6b7280;
+    font-size: 15px;
+  }
+
+  .ct-spinner { font-size: 26px; color: var(--corporate-primary); }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  TABLA — solo desktop (≥ 1200 px)
+  // ═══════════════════════════════════════════════════════════════════════════
+  .ct-table-wrap {
+    overflow-x: auto;
+
+    .col-empleado { min-width: 200px; }
+    .col-area     { min-width: 120px; }
+    .col-sm       { min-width: 58px;  }
+    .col-estado   { min-width: 115px; }
+    .col-num      { min-width: 105px; }
+    .col-actions  { min-width: 115px; }
+
+    .ct-center { text-align: center; }
+
+    .ct-emp-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: #1e293b;
+    }
+
+    .ct-curve-name {
+      font-size: 11px;
+      color: #7c3aed;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 195px;
+    }
+
+    // Input en celda
+    .ct-input {
+      width: 100%;
+      .ct-input-inner {
+        text-align: right;
+        font-size: 12px;
+        padding: 4px 6px;
+        height: 28px;
+        border-radius: 4px;
+      }
+    }
+
+    .ct-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    // Fila con cambios pendientes → amarillo
+    tr.ct-row-editable {
+      background: #fffbeb !important;
+      td { border-left: 3px solid #eab308; }
+    }
+
+    // Flash verde al guardar
+    tr.ct-row-saved { animation: ct-saved-flash 2.5s ease-out; }
+  }
+
+  // ── Empty table ──────────────────────────────────────────────────────────────
+  .ct-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 56px 0;
+    color: #9ca3af;
+    font-size: 14px;
+    i { font-size: 34px; opacity: 0.4; }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  TARJETAS — tablet y móvil (< 1200 px)
+  // ═══════════════════════════════════════════════════════════════════════════
+  .ct-cards-mobile {
+    display: none;            // oculto por defecto (desktop = tabla)
+    gap: 14px;
+  }
+
+  // ── Tarjeta individual ───────────────────────────────────────────────────────
+  .ct-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+
+    &.ct-card-editable {
+      border-color: #eab308;
+      background: #fffbeb;
+      box-shadow: 0 0 0 3px rgba(234,179,8,.15);
+    }
+
+    &.ct-card-saved { animation: ct-saved-flash 2.5s ease-out; }
+  }
+
+  // Encabezado de tarjeta
+  .ct-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .ct-card-emp {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ct-card-emp-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ct-card-curve {
+    font-size: 12px;
+    color: #7c3aed;
+  }
+
+  .ct-card-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .ct-card-lvl {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--corporate-primary);
+    background: #e8f0fa;
+    border-radius: 5px;
+    padding: 2px 8px;
+  }
+
+  // Meta values — fila de referencia
+  .ct-card-meta-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e8edf2;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+
+  .ct-card-meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .ct-meta-label {
+    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+
+  .ct-meta-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--corporate-primary);
+  }
+
+  // Inputs de valores reales
+  .ct-card-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .ct-card-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .ct-field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  // Input táctil — altura mínima 44 px
+  .ct-input {
+    width: 100%;
+    .ct-input-inner {
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      min-height: 44px;
+      border-radius: 6px;
+    }
+  }
+
+  // Acciones de la tarjeta
+  .ct-card-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  // Empty en tarjetas
+  .ct-empty-cards {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 40px 0;
+    color: #9ca3af;
+    font-size: 14px;
+    i { font-size: 30px; opacity: 0.4; }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  ANIMACIÓN guardado
+  // ═══════════════════════════════════════════════════════════════════════════
+  @keyframes ct-saved-flash {
+    0%   { background-color: #dcfce7; }
+    60%  { background-color: #dcfce7; }
+    100% { background-color: transparent; }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  BREAKPOINTS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // Tablet + móvil (< 1200 px) — ocultar tabla, mostrar tarjetas
+  @media (max-width: 1199px) {
+    .ct-table-wrap   { display: none; }
+    .ct-cards-mobile { display: grid; grid-template-columns: repeat(2, 1fr); }
+  }
+
+  // Tablet portrait (768–899 px) y móvil grande — 1 columna
+  @media (max-width: 899px) {
+    .ct-cards-mobile { grid-template-columns: 1fr; }
+
+    // En móvil los botones de acción ocupan todo el ancho
+    .ct-card-actions {
+      flex-direction: column;
+      align-items: stretch;
+
+      ::ng-deep .p-button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+
+  // Móvil pequeño (< 480 px) — ajustes extra
+  @media (max-width: 479px) {
+    .ct-card { padding: 12px; }
+
+    .ct-card-inputs {
+      grid-template-columns: 1fr;   // inputs apilados verticalmente
+    }
+
+    .ct-card-meta-row {
+      grid-template-columns: repeat(3, 1fr);  // meta sigue en fila (son cortos)
+    }
+
+    .ct-card-emp-name { font-size: 13px; }
   }
 }

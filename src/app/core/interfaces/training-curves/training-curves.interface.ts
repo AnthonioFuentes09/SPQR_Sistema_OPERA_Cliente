@@ -291,20 +291,40 @@ export const CURVE_STATUS_LIST: WeekStatusType[] = [
 
 // ── Tracking ──────────────────────────────────────────────────────────────────
 export interface CurveTrackDto {
-  employee_Code:       string;
-  employee_Name:       string;
-  curve_Code:          string;
-  assignment_Id:       number;
+  // Identificadores
   codeId:              number;
+  assignment_CodeId:   number;
+  // Empleado
+  employee_Code:       string;
+  employee_AltCode:    string;
+  employee_Name:       string;
+  // Curva / Área
+  curve_Code:          string;
+  curve_Name:          string;
+  area_AlphaNumId:     string;
+  // Instructor
+  trainer_Code:        string;
+  trainer_Name:        string;
+  // Semana
   assignment_Week:     number;
   curve_Level:         number;
-  target_Efficiency:   number;
-  real_Efficiency:     number | null;
-  real_Pieces:         number | null;
-  real_Hours?:         number;
   assignment_Progress: WeekStatus;
   isCurrentWeek:       boolean;
-  trainer_Code:        string;
+  // Valores meta (solo lectura)
+  base_Hours:          number;
+  target_Efficiency:   number;
+  base_Pieces:         number;
+  // Valores reales (editables)
+  value_Hours:         number;
+  real_Efficiency:     number;
+  real_Pieces:         number;
+  // Comentario instructor
+  instructorComments?: string;
+  // UI only — seteados en el cliente, no se envían al API
+  editableRow:         boolean;
+  editableHour:        boolean;
+  editableEfficiency:  boolean;
+  editablePieces:      boolean;
 }
 
 export interface ResponseCurveTrackDto extends ExecutionResponse {

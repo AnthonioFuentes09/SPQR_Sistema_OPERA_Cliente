@@ -70,8 +70,7 @@ export const MOCK_NAVIGATION = [
     children: [
       { id: 'training.assignment', title: 'Asignación de Curvas',   icon: 'pi pi-calendar',    type: 'basic', route: '/training/curve-assignment'      },
       { id: 'training.tracking',   title: 'Seguimiento',            icon: 'pi pi-chart-bar',   type: 'basic', route: '/training/curve-tracking'         },
-      { id: 'training.requests',   title: 'Solicitudes de Cambio',  icon: 'pi pi-bell',        type: 'basic', route: '/training/curve-requests'         },
-      { id: 'training.operators',  title: 'Gestión de Operarios',   icon: 'pi pi-user-edit',   type: 'basic', route: '/training/operators-management'   },
+{ id: 'training.operators',  title: 'Gestión de Operarios',   icon: 'pi pi-user-edit',   type: 'basic', route: '/training/operators-management'   },
       { id: 'training.config',     title: 'Configuración de Curvas',icon: 'pi pi-cog',         type: 'basic', route: '/training/config/training-curves' },
     ],
   },

@@ -48,7 +48,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   private _checkMobile(width: number): void {
-    const mobile = width < 768;
+    const mobile = width < 1024;  // tablet y móvil usan sidebar overlay
     this.isMobile.set(mobile);
     if (mobile) this.sidebarVisible.set(false);
     else         this.sidebarVisible.set(true);

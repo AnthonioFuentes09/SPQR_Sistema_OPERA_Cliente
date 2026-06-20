@@ -193,7 +193,7 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
 
   // ── Training: Requests ──────────────────────────────────────────────────────
   if (url.includes('CurveRequest/assignment-requests'))
-    return respond({ success: true, requests: MOCK_REQUESTS });
+    return respond(MOCK_REQUESTS);
 
   if (url.includes('CurveRequest/assignment-request')) {
     if (method === 'PATCH') return respond({ success: true, successMessage: 'Solicitud procesada correctamente.' });

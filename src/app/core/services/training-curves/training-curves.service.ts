@@ -228,7 +228,16 @@ export class TrainingCurvesService {
 
   // ── HTTP: progreso semanal (curve-tracking patch, via interceptor) ────────
 
-  patchWeekValues$(body: Partial<WeeklyProgress>): Observable<ExecutionResponse> {
+  patchWeekValues$(body: {
+    codeId:            number;
+    assignment_CodeId: number;
+    base_Hours:        number;
+    value_Hours:       number;
+    target_Efficiency: number;
+    real_Efficiency:   number;
+    real_Pieces:       number;
+    base_Pieces:       number;
+  }): Observable<ExecutionResponse> {
     return this._http
       .patch<ExecutionResponse>(`${this._apiUrl}PatchEmployeeWeekCurveValues`, body)
       .pipe(this._exceptionService.handleExecutionError());

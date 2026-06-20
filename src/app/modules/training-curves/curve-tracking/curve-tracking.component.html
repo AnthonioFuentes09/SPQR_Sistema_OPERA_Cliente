@@ -1,116 +1,313 @@
-<div class="opera-curve-tracking p-4">
-  <div class="flex items-center justify-between mb-4">
-    <h1 class="page-title">Seguimiento de Curvas</h1>
+<div class="page-card curve-tracking">
+
+  <!-- ── 1. Header ──────────────────────────────────────────────────────────── -->
+  <opera-page-header
+    icon="pi pi-chart-bar"
+    iconColor="success"
+    title="Seguimiento de Curvas"
+    [subtitle]="subtitle()"
+    placeholder="Buscar empleado, curva o área..."
+    (searchChange)="onSearchChange($event)">
+  </opera-page-header>
+
+  <hr class="pw-section-divider" />
+
+  <!-- ── 2. Barra de acciones ───────────────────────────────────────────────── -->
+  <div class="ct-actions-bar">
+    <p-button
+      label="Consultar"
+      icon="pi pi-eye"
+      size="small"
+      (onClick)="reload()">
+    </p-button>
+
     @if (isInstructor()) {
-      <span class="text-sm text-muted-color">
-        <i class="pi pi-user mr-1"></i>Instructor: {{ trainerCode() }}
+      <span class="ct-instructor-tag">
+        <i class="pi pi-user"></i>
+        Solo mis operarios ({{ trainerCode() }})
       </span>
     }
   </div>
 
+  <!-- ── 3. Tabla ───────────────────────────────────────────────────────────── -->
   @if (loading()) {
-    <div class="flex justify-center py-10">
-      <p-progressSpinner strokeWidth="4" />
+    <div class="ct-loading">
+      <i class="pi pi-spin pi-spinner ct-spinner"></i>
+      <span>Cargando registros...</span>
     </div>
   } @else {
-    <p-table
-      [value]="rows()"
-      [dataKey]="'codeId'"
-      styleClass="p-datatable-sm p-datatable-striped"
-      [tableStyle]="{ 'min-width': '900px' }"
-      [scrollable]="true"
-    >
-      <ng-template pTemplate="header">
-        <tr>
-          <th style="width:160px">Operario</th>
-          <th style="width:120px">Semana</th>
-          <th style="width:100px">Nivel</th>
-          <th style="width:110px">Ef. Base %</th>
-          <th style="width:130px">Ef. Real %</th>
-          <th style="width:120px">Piezas Real</th>
-          <th style="width:110px">Horas Real</th>
-          <th style="width:100px">Estado</th>
-          <th style="width:80px"></th>
-        </tr>
-      </ng-template>
+    <div class="ct-table-wrap">
+      <p-table
+        [value]="filteredRows()"
+        [dataKey]="'codeId'"
+        styleClass="p-datatable-sm p-datatable-gridlines"
+        [scrollable]="true"
+        scrollHeight="flex">
 
-      <ng-template pTemplate="body" let-row>
-        <tr [class.row-current-week]="isCurrentWeek(row)" [class.row-saved]="isSaved(row.codeId)">
-          <td>{{ row.employee_Name }}</td>
-          <td>{{ row.assignment_Week }}</td>
-          <td>{{ row.curve_Level }}</td>
-          <td>{{ row.target_Efficiency }}%</td>
-          <td>
-            @if (isCurrentWeek(row)) {
+        <!-- Header -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="col-empleado">Empleado / Curva</th>
+            <th class="col-area">Área</th>
+            <th class="col-sm">Sem.</th>
+            <th class="col-sm">Niv.</th>
+            <th class="col-estado">Estado</th>
+            <th class="col-num">H. Meta</th>
+            <th class="col-num">% Efic Meta</th>
+            <th class="col-num">Pzas. Meta</th>
+            <th class="col-num">H. Reales</th>
+            <th class="col-num">% Efic Real</th>
+            <th class="col-num">Pzas. Reales</th>
+            <th class="col-actions">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <!-- Body -->
+        <ng-template pTemplate="body" let-row>
+          <tr
+            [class.ct-row-editable]="row.editableRow"
+            [class.ct-row-saved]="isSaved(row.codeId)">
+
+            <!-- Empleado + Curva -->
+            <td class="col-empleado">
+              <div class="ct-emp-name">{{ row.employee_AltCode }} | {{ row.employee_Name }}</div>
+              <div class="ct-curve-name">{{ row.curve_Name }}</div>
+            </td>
+
+            <!-- Área -->
+            <td class="col-area">
+              <span class="status-badge" style="background:#555c6b; color:#fff">
+                {{ row.area_AlphaNumId }}
+              </span>
+            </td>
+
+            <!-- Semana -->
+            <td class="col-sm ct-center">{{ row.assignment_Week }}</td>
+
+            <!-- Nivel -->
+            <td class="col-sm ct-center">
+              <strong>{{ row.curve_Level }}</strong>
+            </td>
+
+            <!-- Estado -->
+            <td class="col-estado">
+              <span [class]="getStatusClass(row.assignment_Progress)">
+                {{ row.assignment_Progress }}
+              </span>
+            </td>
+
+            <!-- H. Meta (readonly) -->
+            <td class="col-num ct-center">{{ row.base_Hours }}h</td>
+
+            <!-- % Efic Meta (readonly) -->
+            <td class="col-num ct-center">{{ row.target_Efficiency }}%</td>
+
+            <!-- Pzas. Meta (readonly) -->
+            <td class="col-num ct-center">{{ row.base_Pieces }}</td>
+
+            <!-- H. Reales (editable) -->
+            <td class="col-num">
+              <p-inputNumber
+                [(ngModel)]="row.value_Hours"
+                [min]="0" [max]="60"
+                [maxFractionDigits]="1"
+                styleClass="ct-input"
+                inputStyleClass="ct-input-inner"
+                (ngModelChange)="onInputChange(row)"
+                pTooltip="Meta: {{ row.base_Hours }}h"
+                tooltipPosition="top">
+              </p-inputNumber>
+            </td>
+
+            <!-- % Efic Real (editable) -->
+            <td class="col-num">
               <p-inputNumber
                 [(ngModel)]="row.real_Efficiency"
                 [min]="0" [max]="200"
-                [suffix]="'%'"
-                styleClass="w-full"
-                inputStyleClass="text-right"
-                size="small"
-              />
-            } @else {
-              {{ row.real_Efficiency }}%
-            }
-          </td>
-          <td>
-            @if (isCurrentWeek(row)) {
+                [maxFractionDigits]="1"
+                suffix="%"
+                styleClass="ct-input"
+                inputStyleClass="ct-input-inner"
+                (ngModelChange)="onInputChange(row)"
+                pTooltip="Meta: {{ row.target_Efficiency }}%"
+                tooltipPosition="top">
+              </p-inputNumber>
+            </td>
+
+            <!-- Pzas. Reales (editable) -->
+            <td class="col-num">
               <p-inputNumber
                 [(ngModel)]="row.real_Pieces"
                 [min]="0"
-                styleClass="w-full"
-                inputStyleClass="text-right"
-                size="small"
-              />
-            } @else {
-              {{ row.real_Pieces }}
-            }
-          </td>
-          <td>
-            @if (isCurrentWeek(row)) {
-              <p-inputNumber
-                [(ngModel)]="row.real_Hours"
-                [min]="0" [max]="60"
-                styleClass="w-full"
-                inputStyleClass="text-right"
-                size="small"
-              />
-            } @else {
-              {{ row.real_Hours }}h
-            }
-          </td>
-          <td>
-            <span [class]="'status-badge ' + row.assignment_Progress">
-              {{ row.assignment_Progress }}
-            </span>
-          </td>
-          <td>
-            @if (isCurrentWeek(row)) {
-              <p-button
-                icon="pi pi-save"
-                [text]="true"
-                [rounded]="true"
-                size="small"
-                severity="success"
-                pTooltip="Guardar"
-                tooltipPosition="top"
-                [loading]="saving()"
-                (onClick)="saveRow(row)"
-              />
-            }
-          </td>
-        </tr>
-      </ng-template>
+                [maxFractionDigits]="0"
+                styleClass="ct-input"
+                inputStyleClass="ct-input-inner"
+                (ngModelChange)="onInputChange(row)"
+                pTooltip="Meta: {{ row.base_Pieces }}"
+                tooltipPosition="top">
+              </p-inputNumber>
+            </td>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="9" class="text-center py-6 text-muted-color">
-            <i class="pi pi-inbox text-3xl mb-2 block opacity-30"></i>
-            Sin registros de seguimiento
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+            <!-- Acciones -->
+            <td class="col-actions">
+              <div class="ct-btn-group">
+                <!-- Guardar -->
+                <p-button
+                  icon="pi pi-save"
+                  [text]="true"
+                  [rounded]="true"
+                  size="small"
+                  severity="success"
+                  [disabled]="!row.editableRow || saving()"
+                  [loading]="saving() && row.editableRow"
+                  pTooltip="Guardar progreso"
+                  tooltipPosition="top"
+                  (onClick)="onSaveWeeklyProgress(row)">
+                </p-button>
+
+                <!-- Limpiar -->
+                <p-button
+                  icon="pi pi-times"
+                  [text]="true"
+                  [rounded]="true"
+                  size="small"
+                  severity="danger"
+                  [disabled]="!row.editableRow"
+                  pTooltip="Limpiar"
+                  tooltipPosition="top"
+                  (onClick)="onClearControls(row)">
+                </p-button>
+
+                <!-- Comentario instructor -->
+                <p-button
+                  [icon]="row.instructorComments ? 'pi pi-comment' : 'pi pi-plus-circle'"
+                  [text]="true"
+                  [rounded]="true"
+                  size="small"
+                  [severity]="row.instructorComments ? 'success' : 'secondary'"
+                  [pTooltip]="row.instructorComments ? 'Editar comentario' : 'Agregar comentario'"
+                  tooltipPosition="top"
+                  (onClick)="onShowInstructorComment(row)">
+                </p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- Empty -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="12" class="ct-empty">
+              <i class="pi pi-inbox"></i>
+              <span>Sin registros de seguimiento para la semana activa</span>
+            </td>
+          </tr>
+        </ng-template>
+
+      </p-table>
+    </div>
+
+    <!-- ── Tarjetas: tablet (2 col) y móvil (1 col) ────────────────────────── -->
+    <div class="ct-cards-mobile">
+      @for (row of filteredRows(); track row.codeId) {
+        <div class="ct-card" [class.ct-card-editable]="row.editableRow" [class.ct-card-saved]="isSaved(row.codeId)">
+
+          <!-- Encabezado: empleado + badges -->
+          <div class="ct-card-header">
+            <div class="ct-card-emp">
+              <span class="ct-card-emp-name">{{ row.employee_AltCode }} — {{ row.employee_Name }}</span>
+              <span class="ct-card-curve">{{ row.curve_Name }}</span>
+            </div>
+            <div class="ct-card-badges">
+              <span class="status-badge" style="background:#555c6b;color:#fff;font-size:10px">
+                {{ row.area_AlphaNumId }}
+              </span>
+              <span class="ct-card-lvl">Niv {{ row.curve_Level }}</span>
+              <span [class]="getStatusClass(row.assignment_Progress)" style="font-size:10px">
+                {{ row.assignment_Progress }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Valores META de referencia -->
+          <div class="ct-card-meta-row">
+            <div class="ct-card-meta-item">
+              <span class="ct-meta-label">H. Meta</span>
+              <span class="ct-meta-value">{{ row.base_Hours }}h</span>
+            </div>
+            <div class="ct-card-meta-item">
+              <span class="ct-meta-label">Efic. Meta</span>
+              <span class="ct-meta-value">{{ row.target_Efficiency }}%</span>
+            </div>
+            <div class="ct-card-meta-item">
+              <span class="ct-meta-label">Pzas. Meta</span>
+              <span class="ct-meta-value">{{ row.base_Pieces }}</span>
+            </div>
+          </div>
+
+          <!-- Inputs de valores REALES -->
+          <div class="ct-card-inputs">
+            <div class="ct-card-field">
+              <span class="ct-field-label">Horas reales</span>
+              <p-inputNumber
+                [(ngModel)]="row.value_Hours"
+                [min]="0" [max]="60" [maxFractionDigits]="1"
+                styleClass="ct-input" inputStyleClass="ct-input-inner"
+                (ngModelChange)="onInputChange(row)">
+              </p-inputNumber>
+            </div>
+            <div class="ct-card-field">
+              <span class="ct-field-label">% Eficiencia</span>
+              <p-inputNumber
+                [(ngModel)]="row.real_Efficiency"
+                [min]="0" [max]="200" [maxFractionDigits]="1" suffix="%"
+                styleClass="ct-input" inputStyleClass="ct-input-inner"
+                (ngModelChange)="onInputChange(row)">
+              </p-inputNumber>
+            </div>
+            <div class="ct-card-field">
+              <span class="ct-field-label">Piezas reales</span>
+              <p-inputNumber
+                [(ngModel)]="row.real_Pieces"
+                [min]="0" [maxFractionDigits]="0"
+                styleClass="ct-input" inputStyleClass="ct-input-inner"
+                (ngModelChange)="onInputChange(row)">
+              </p-inputNumber>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="ct-card-actions">
+            <p-button
+              label="Guardar" icon="pi pi-save" severity="success"
+              [disabled]="!row.editableRow || saving()"
+              [loading]="saving() && row.editableRow"
+              (onClick)="onSaveWeeklyProgress(row)">
+            </p-button>
+            <p-button
+              label="Limpiar" icon="pi pi-times" severity="danger" [outlined]="true"
+              [disabled]="!row.editableRow"
+              (onClick)="onClearControls(row)">
+            </p-button>
+            <p-button
+              [icon]="row.instructorComments ? 'pi pi-comment' : 'pi pi-plus-circle'"
+              [text]="true"
+              [severity]="row.instructorComments ? 'success' : 'secondary'"
+              [pTooltip]="row.instructorComments ? 'Editar comentario' : 'Agregar comentario'"
+              (onClick)="onShowInstructorComment(row)">
+            </p-button>
+          </div>
+
+        </div>
+      }
+
+      @if (!filteredRows().length && !loading()) {
+        <div class="ct-empty-cards">
+          <i class="pi pi-inbox"></i>
+          <span>Sin registros de seguimiento para la semana activa</span>
+        </div>
+      }
+    </div>
   }
+
 </div>
