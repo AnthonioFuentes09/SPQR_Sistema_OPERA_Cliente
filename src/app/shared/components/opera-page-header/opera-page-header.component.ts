@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, model, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export type PageHeaderIconColor = 'primary' | 'success' | 'warning' | 'danger' | 'orange' | 'gray';
@@ -24,6 +24,12 @@ export class OperaPageHeaderComponent {
   readonly showSearch  = input<boolean>(true);
   /** Placeholder del input */
   readonly placeholder = input<string>('Buscar registro...');
+  /** Mostrar checkbox de filtros */
+  readonly showFilterToggle = input<boolean>(false);
+  /** Label del checkbox de filtros */
+  readonly filterToggleLabel = input<string>('Mostrar Filtros');
+  /** Estado del checkbox (two-way via model) */
+  readonly showFilters = model<boolean>(true);
 
   // ── Outputs ───────────────────────────────────────────────────────────────
   readonly searchChange = output<string>();
@@ -40,5 +46,9 @@ export class OperaPageHeaderComponent {
   clearSearch(): void {
     this._searchTerm.set('');
     this.searchChange.emit('');
+  }
+
+  onFilterToggle(event: Event): void {
+    this.showFilters.set((event.target as HTMLInputElement).checked);
   }
 }

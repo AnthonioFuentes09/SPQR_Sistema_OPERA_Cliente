@@ -13,23 +13,37 @@
     </div>
   </div>
 
-  <!-- Derecha: búsqueda -->
-  @if (showSearch()) {
-    <div class="oph-search-wrap">
-      <i class="pi pi-search oph-search-icon"></i>
-      <input
-        class="oph-search-input"
-        type="text"
-        [placeholder]="placeholder()"
-        [value]="searchTerm()"
-        (input)="onSearch($any($event.target).value)"
-      />
-      @if (searchTerm()) {
-        <button class="oph-search-clear" (click)="clearSearch()" type="button" aria-label="Limpiar búsqueda">
-          <i class="pi pi-times"></i>
-        </button>
-      }
-    </div>
-  }
+  <!-- Derecha: búsqueda + toggle filtros -->
+  <div class="oph-right">
+    @if (showSearch()) {
+      <div class="oph-search-wrap">
+        <i class="pi pi-search oph-search-icon"></i>
+        <input
+          class="oph-search-input"
+          type="text"
+          [placeholder]="placeholder()"
+          [value]="searchTerm()"
+          (input)="onSearch($any($event.target).value)"
+        />
+        @if (searchTerm()) {
+          <button class="oph-search-clear" (click)="clearSearch()" type="button" aria-label="Limpiar búsqueda">
+            <i class="pi pi-times"></i>
+          </button>
+        }
+      </div>
+    }
+
+    @if (showFilterToggle()) {
+      <label class="oph-filter-toggle">
+        <input
+          type="checkbox"
+          class="oph-filter-checkbox"
+          [checked]="showFilters()"
+          (change)="onFilterToggle($event)"
+        />
+        <span>{{ filterToggleLabel() }}</span>
+      </label>
+    }
+  </div>
 
 </div>

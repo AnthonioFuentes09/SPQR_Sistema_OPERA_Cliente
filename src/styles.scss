@@ -726,3 +726,68 @@ textarea.pw-form-input {
   resize: vertical;
   min-height: 80px;
 }
+
+// ── Context menu global (curve-assignment) ────────────────────────────────────
+// appendTo="body" → los estilos deben estar en styles.scss (fuera del componente)
+.ca-ctx-menu.p-contextmenu {
+  padding: 4px 0;
+  min-width: 200px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+
+  // Header deshabilitado (nombre + curva)
+  .p-menuitem.p-disabled {
+    opacity: 1;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .ctx-header-name .p-menuitem-content {
+    padding: 8px 14px 2px;
+    .p-menuitem-text {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    .p-menuitem-icon { display: none; }
+  }
+
+  .ctx-header-curve .p-menuitem-content {
+    padding: 0 14px 6px;
+    .p-menuitem-text {
+      font-size: 0.72rem;
+      color: #6b7280;
+    }
+    .p-menuitem-icon { display: none; }
+  }
+
+  // Separador
+  .p-menuitem-separator {
+    margin: 4px 0;
+    border-top: 1px solid #f3f4f6;
+  }
+
+  // Items normales
+  .p-menuitem-content {
+    border-radius: 0;
+    .p-menuitem-link {
+      padding: 9px 14px;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: #374151;
+      border-radius: 0;
+
+      &:hover { background: #f3f4f6; }
+
+      .p-menuitem-icon { color: #6b7280; font-size: 0.8rem; }
+    }
+  }
+
+  // Item de peligro (Eliminar Curva)
+  .ctx-danger-item .p-menuitem-content .p-menuitem-link {
+    color: #ef4444;
+    .p-menuitem-icon { color: #ef4444; }
+    &:hover { background: #fef2f2; }
+  }
+}

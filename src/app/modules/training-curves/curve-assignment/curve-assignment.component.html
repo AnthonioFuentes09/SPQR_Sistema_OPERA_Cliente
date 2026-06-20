@@ -1,111 +1,647 @@
-<div class="opera-curve-assignment">
-<div class="page-card">
+<div class="curve-assignment">
 
-  <!-- Header ──────────────────────────────────────────────────────────────── -->
-  <div class="page-header">
-    <h1 class="page-title">Asignación de Curvas</h1>
+  <!-- ── 1. Page Header ────────────────────────────────────────────────────── -->
+  <opera-page-header
+    icon="pi pi-chart-line"
+    iconColor="orange"
+    title="Asignación de Curvas"
+    [subtitle]="subtitle()"
+    [showSearch]="true"
+    placeholder="Buscar empleado..."
+    [showFilterToggle]="true"
+    [showFilters]="showFiltersBar()"
+    (showFiltersChange)="onToggleFilters($event)"
+    (searchChange)="onSearchChange($event)">
+  </opera-page-header>
 
-    <!-- Año / Semestre -->
+  <!-- ── 2. Actions Bar ────────────────────────────────────────────────────── -->
+  <div class="ca-actions-bar">
+
+    <!-- Consultar -->
+    <p-button
+      label="Consultar"
+      icon="pi pi-eye"
+      size="small"
+      (onClick)="reload()">
+    </p-button>
+
+    <!-- Separador -->
+    <div class="ca-bar-sep"></div>
+
+    <!-- Etiqueta semestre -->
+    <span class="semester-label">{{ semesterLabel() }}</span>
+
+    <!-- Navegación de semestre como button group -->
+    <div class="ca-semester-btns">
+      <p-button
+        label="S1 (1–26)"
+        size="small"
+        [outlined]="currentSemester() !== 1"
+        (onClick)="onSemesterChange(1)">
+      </p-button>
+      <p-button
+        label="S2 (27–52)"
+        size="small"
+        [outlined]="currentSemester() !== 2"
+        (onClick)="onSemesterChange(2)">
+      </p-button>
+      <p-button
+        label="Año"
+        size="small"
+        [outlined]="currentSemester() !== 0"
+        (onClick)="onSemesterChange(0)">
+      </p-button>
+    </div>
+
+    <!-- Año -->
     <p-select
-      [options]="semesterOptions"
-      [ngModel]="currentSemester()"
-      (ngModelChange)="onSemesterChange($event)"
+      [options]="yearOpts"
       optionLabel="label"
       optionValue="value"
-      styleClass="w-40"
-    />
+      [ngModel]="currentYear()"
+      (ngModelChange)="onYearChange($event)"
+      styleClass="ca-year-select">
+    </p-select>
 
-    <!-- Filtro estado -->
-    <opera-filters
-      [options]="statusFilterOptions()"
-      label=""
-      [multiple]="true"
-      placeholder="Filtrar estado"
-      (filterChange)="onStatusFilter($event)"
-    />
+    <!-- Espaciado -->
+    <div class="ca-bar-spacer"></div>
 
-    <p-button label="Nueva asignación" icon="pi pi-plus" (onClick)="openCreate()" />
+    <!-- Leyenda -->
+    <div class="ca-legend-wrap">
+      <p-button
+        label="Leyenda"
+        icon="pi pi-info-circle"
+        size="small"
+        [text]="true"
+        (onClick)="toggleLegendPopover(); $event.stopPropagation()"
+        pTooltip="Ver leyenda de estados">
+      </p-button>
+
+      @if (showLegendPopover()) {
+        <div class="ca-legend-popover" (click)="$event.stopPropagation()">
+          <button class="lp-close" (click)="closeLegendPopover()">
+            <i class="pi pi-times"></i>
+          </button>
+
+          <div class="lp-section">
+            <div class="lp-title">📋 Eventos</div>
+            <div class="lp-row-text">• <strong>Consultar:</strong> Recarga los registros del semestre seleccionado</div>
+            <div class="lp-row-text">• <strong>S1 / S2:</strong> Filtra semanas 1-26 o 27-52</div>
+            <div class="lp-row-text">• <strong>Mostrar Filtros:</strong> Despliega los filtros adicionales</div>
+          </div>
+
+          <div class="lp-section">
+            <div class="lp-title">👤 Indicador de Empleado</div>
+            <div class="lp-row-item">
+              <span class="lp-dot" style="background:#22c55e"></span>Con instructor asignado
+            </div>
+            <div class="lp-row-item">
+              <span class="lp-dot" style="background:#ef4444"></span>Sin instructor
+            </div>
+          </div>
+
+          <div class="lp-section">
+            <div class="lp-title">📊 Estados de Semana</div>
+            <div class="lp-row-item"><span class="lp-dot" style="background:#3b82f6"></span>En Proceso</div>
+            <div class="lp-row-item"><span class="lp-dot" style="background:#22c55e"></span>Completada</div>
+            <div class="lp-row-item"><span class="lp-dot" style="background:#6b7280"></span>Por Hacer</div>
+            <div class="lp-row-item"><span class="lp-dot" style="background:#ef4444"></span>No Completado</div>
+            <div class="lp-row-item"><span class="lp-dot" style="background:#eab308"></span>En Pausa</div>
+            <div class="lp-row-item"><span class="lp-dot" style="background:#b40000"></span>Cancelada</div>
+            <div class="lp-row-item"><span class="lp-dot" style="background:#a855f7"></span>Solicitada</div>
+            <div class="lp-row-item"><span class="lp-dot" style="background:#bebebe"></span>Sin Información</div>
+          </div>
+
+          <div class="lp-section">
+            <div class="lp-title">📅 Semanas</div>
+            <div class="lp-row-text">− Semana pasada (sin asignación)</div>
+            <div class="lp-row-text">+ Semana futura (click para asignar)</div>
+            <div class="lp-row-text">• Semana actual</div>
+            <div class="lp-row-text">💬 Badge verde = tiene comentario de instructor</div>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 
-  <!-- Loading ─────────────────────────────────────────────────────────────── -->
-  @if (loading()) {
-    <div class="flex justify-center py-16">
-      <p-progressSpinner strokeWidth="4" />
-    </div>
-  } @else {
+  <!-- ── 3. Filters Bar (condicional) ─────────────────────────────────────── -->
+  @if (showFiltersBar() && filterOpts()) {
+    <div class="ca-filters-bar">
+      <opera-filters
+        [options]="filterOpts()!.areaOpts"
+        label="Áreas"
+        [multiple]="true"
+        (filterChange)="onFilterAreas($any($event))">
+      </opera-filters>
 
-  <!-- Timeline ─────────────────────────────────────────────────────────────── -->
-  <div class="timeline-wrapper">
-    <table class="timeline-table">
+      <opera-filters
+        [options]="filterOpts()!.instructorOpts"
+        label="Instructores"
+        [multiple]="true"
+        (filterChange)="onFilterInstructors($any($event))">
+      </opera-filters>
+
+      <opera-filters
+        [options]="filterOpts()!.curveTypeOpts"
+        label="Tipo Curva"
+        [multiple]="true"
+        (filterChange)="onFilterCurveTypes($any($event))">
+      </opera-filters>
+
+      <opera-filters
+        [options]="filterOpts()!.categoryUserOpts"
+        label="Categoría"
+        [multiple]="true"
+        (filterChange)="onFilterCategories($any($event))">
+      </opera-filters>
+    </div>
+  }
+
+  <!-- ── Loading ──────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="ca-loading">
+      <p-progressSpinner strokeWidth="3" styleClass="ca-spinner" />
+      <span>Cargando timeline...</span>
+    </div>
+  }
+
+  <!-- ── Timeline wrapper ──────────────────────────────────────────────────── -->
+  @if (!loading()) {
+    <div class="ca-timeline-wrapper">
+      <table class="ca-table">
+        <!-- Cabecera -->
+        <thead>
+          <tr>
+            <th class="col-emp sticky-col-1">Empleado</th>
+            <th class="col-area sticky-col-2">Área</th>
+            <th class="col-type sticky-col-3">Tipo</th>
+            @for (wk of calendarWeeks(); track wk.weekNumber) {
+              <th class="col-week" [class.current-week]="wk.isCurrentWeek">
+                {{ wk.weekNumber }}
+              </th>
+            }
+          </tr>
+        </thead>
+
+        <!-- Cuerpo -->
+        <tbody>
+          @for (row of paginatedRows(); track trackByRow($index, row)) {
+            <tr [class.row-no-instructor]="!row.hasInstructor">
+
+              <!-- Celda Empleado (rowspan) -->
+              @if (row.isFirstEmployeeLog) {
+                <td
+                  [attr.rowspan]="row.columnEmployeeSize"
+                  class="col-emp sticky-col-1 cell-emp"
+                  (contextmenu)="onEmployeeCellRightClick($event, row)">
+                  <div class="emp-row">
+                    <!-- Dot de estado (verde = con instructor, rojo = sin instructor) -->
+                    <span
+                      class="emp-status-dot"
+                      [class.with-instructor]="row.hasInstructor"
+                      [class.without-instructor]="!row.hasInstructor"
+                      [pTooltip]="row.hasInstructor ? 'Con instructor' : 'Sin instructor'"
+                      tooltipPosition="right">
+                    </span>
+                    <!-- Nombre del empleado -->
+                    <span class="emp-name">{{ row.employee_Name }}</span>
+                    <!-- Ícono que abre el popover de detalle -->
+                    <button
+                      class="emp-detail-btn"
+                      (click)="onEmployeeIconClick($event, row, empDetailOverlay)"
+                      pTooltip="Ver detalle"
+                      tooltipPosition="right">
+                      <i class="pi pi-user"></i>
+                    </button>
+                  </div>
+                </td>
+              }
+
+              <!-- Celda Área (rowspan) -->
+              @if (row.isFirstAreaLog) {
+                <td
+                  [attr.rowspan]="row.columnAreaSize"
+                  class="col-area sticky-col-2 cell-area">
+                  <span class="area-label">{{ row.area_AlphaNumId || '—' }}</span>
+                </td>
+              }
+
+              <!-- Celda Tipo (rowspan por tipo de curva) -->
+              @if (row.isFirstTypeLog) {
+                <td
+                  [attr.rowspan]="row.columnCurveTypeSize"
+                  class="col-type sticky-col-3 cell-type">
+                  <div class="curve-type-content">
+                    <span class="curve-type-name">{{ row.curveTypeCode }}</span>
+                  </div>
+                </td>
+              }
+
+              <!-- Celdas de semana -->
+              @for (cell of row.weeks; track cell.weekNumber) {
+                <td
+                  class="col-week cell-week"
+                  [class.current-week]="cell.isCurrentWeek"
+                  (click)="onWeekCellClick($event, row, cell, weekDetailOverlay)"
+                  (contextmenu)="onWeekCellRightClick($event, row, cell)">
+
+                  @if (!cell.hasAssignment) {
+                    <div class="week-content empty" [class.current-week-empty]="cell.isCurrentWeek">
+                      @if (cell.isCurrentWeek) {
+                        <span class="current-week-dot">•</span>
+                      } @else if (cell.isFutureWeek) {
+                        <span class="add-icon">+</span>
+                      } @else {
+                        <span class="add-icon">−</span>
+                      }
+                    </div>
+                  }
+
+                  @if (cell.hasAssignment) {
+                    <div class="week-content assignment {{ cell.weekCellClass }}">
+                      @if (cell.hasInstructorComment) {
+                        <span class="comment-badge"></span>
+                      }
+                      {{ cell.weekCellContent }}
+                    </div>
+                  }
+                </td>
+              }
+            </tr>
+          }
+
+          @if (paginatedRows().length === 0 && !loading()) {
+            <tr>
+              <td [attr.colspan]="3 + calendarWeeks().length" class="empty-row">
+                <i class="pi pi-inbox"></i>
+                <span>No hay registros para mostrar</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Paginación ────────────────────────────────────────────────────── -->
+    <div class="ca-pagination">
+      <button class="btn-page" [disabled]="pageIndex() === 0" (click)="onPrevPage()">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      <span class="page-info">{{ pageIndex() + 1 }} / {{ totalPages() }}</span>
+      <button class="btn-page" [disabled]="pageIndex() >= totalPages() - 1" (click)="onNextPage()">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  }
+
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- Overlay de detalle de EMPLEADO (click en ícono del empleado)             -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<p-overlayPanel #empDetailOverlay styleClass="ca-emp-overlay">
+  @if (empOverlayRow()) {
+    <div class="emp-detail">
+      <!-- Avatar + nombre -->
+      <div class="ed-header">
+        <div class="ed-avatar">
+          <i class="pi pi-user"></i>
+        </div>
+        <div class="ed-header-text">
+          <span class="ed-name">{{ empOverlayRow()!.employee_Name }}</span>
+          <span class="ed-codes">{{ empOverlayRow()!.employee_Code }} | {{ empOverlayRow()!.employee_AltCode }}</span>
+        </div>
+      </div>
+      <p-divider />
+      <!-- Campos de detalle -->
+      <div class="ed-grid">
+        <span class="ed-label">Categoría</span>
+        <span class="ed-val">{{ empOverlayRow()!.userCategory_Name || empOverlayRow()!.userCategory_Code }}</span>
+
+        <span class="ed-label">Área</span>
+        <span class="ed-val">{{ empOverlayRow()!.area_AlphaNumId || '—' }}</span>
+
+        <span class="ed-label">Tipo Curva</span>
+        <span class="ed-val">{{ empOverlayRow()!.curveTypeCode || '—' }}</span>
+
+        <span class="ed-label">Instructor</span>
+        <span class="ed-val" [class.ed-val--none]="!empOverlayRow()!.hasInstructor">
+          @if (empOverlayRow()!.hasInstructor) {
+            <span class="ed-instr-dot"></span>{{ empOverlayRow()!.trainer_Name }}
+          } @else {
+            Sin instructor asignado
+          }
+        </span>
+      </div>
+
+      <!-- Acciones rápidas -->
+      <p-divider />
+      <div class="ed-actions">
+        <button class="ed-action-btn" (click)="openInstructorModal(); empDetailOverlay.hide()">
+          <i class="pi pi-user-edit"></i> Cambiar Instructor
+        </button>
+        <button class="ed-action-btn" (click)="openAssignmentFromEmployee(); empDetailOverlay.hide()">
+          <i class="pi pi-plus"></i> Asignar Curva
+        </button>
+      </div>
+    </div>
+  }
+</p-overlayPanel>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- Overlay de detalle de celda (click sobre celda con asignación)           -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<p-overlayPanel #weekDetailOverlay styleClass="ca-week-overlay">
+  @if (currentWP()) {
+    <div class="overlay-detail">
+
+      <!-- Encabezado -->
+      <div class="od-header">
+        <div class="od-header-left">
+          <span class="od-title">Semana {{ currentWP()!.assignment_Week }}</span>
+          <span class="od-curve">{{ selectedAssignment()?.curve_Name }}</span>
+          <span class="od-employee">{{ selectedAssignment()?.employee_Name }}</span>
+        </div>
+        <span class="od-badge od-state-{{ currentWP()!.assignment_Progress }}">
+          {{ currentWP()!.assignment_Progress }}
+        </span>
+      </div>
+
+      <p-divider />
+
+      <!-- Nivel + período -->
+      <div class="od-meta-row">
+        <span class="od-meta-item">
+          <i class="pi pi-tag"></i> Nivel {{ currentWP()!.curve_Level }}
+        </span>
+        <span class="od-meta-item">
+          <i class="pi pi-calendar"></i> Año {{ currentWP()!.assignment_Year }}
+        </span>
+        @if (currentWP()!.trainer_Name) {
+          <span class="od-meta-item">
+            <i class="pi pi-user"></i> {{ currentWP()!.trainer_Name }}
+          </span>
+        }
+      </div>
+
+      <p-divider />
+
+      <!-- Eficiencia con barra de progreso -->
+      <div class="od-section">
+        <div class="od-section-title">Eficiencia</div>
+        <div class="od-progress-row">
+          <span class="od-progress-label">Objetivo</span>
+          <div class="od-progress-bar">
+            <div
+              class="od-progress-fill od-fill-target"
+              [style.width.%]="currentWP()!.target_Efficiency">
+            </div>
+          </div>
+          <span class="od-progress-val">{{ currentWP()!.target_Efficiency }}%</span>
+        </div>
+        <div class="od-progress-row">
+          <span class="od-progress-label">Real</span>
+          <div class="od-progress-bar">
+            <div
+              class="od-progress-fill"
+              [class.od-fill-success]="(currentWP()!.real_Efficiency ?? 0) >= currentWP()!.target_Efficiency"
+              [class.od-fill-warning]="(currentWP()!.real_Efficiency ?? 0) < currentWP()!.target_Efficiency && (currentWP()!.real_Efficiency ?? 0) > 0"
+              [style.width.%]="currentWP()!.real_Efficiency ?? 0">
+            </div>
+          </div>
+          <span class="od-progress-val">{{ currentWP()!.real_Efficiency ?? '—' }}%</span>
+        </div>
+      </div>
+
+      <!-- Horas y Piezas -->
+      <div class="od-section">
+        <div class="od-section-title">Producción</div>
+        <div class="od-stats-grid">
+          <div class="od-stat">
+            <span class="od-stat-label">Horas Base</span>
+            <span class="od-stat-val">{{ currentWP()!.base_Hours }}</span>
+          </div>
+          <div class="od-stat">
+            <span class="od-stat-label">Piezas Base</span>
+            <span class="od-stat-val">{{ currentWP()!.base_Pieces }}</span>
+          </div>
+          <div class="od-stat">
+            <span class="od-stat-label">Piezas Real</span>
+            <span class="od-stat-val">{{ currentWP()!.real_Pieces ?? '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comentario instructor -->
+      @if (currentWP()!.instructorComments) {
+        <div class="od-comment">
+          <i class="pi pi-comment"></i>
+          <span>{{ currentWP()!.instructorComments }}</span>
+        </div>
+      }
+
+      <!-- Comentario general -->
+      @if (currentWP()!.comments) {
+        <div class="od-comment od-comment--info">
+          <i class="pi pi-info-circle"></i>
+          <span>{{ currentWP()!.comments }}</span>
+        </div>
+      }
+    </div>
+  }
+</p-overlayPanel>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- Menús contextuales — PrimeNG maneja posicionamiento automático            -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<p-contextMenu #weekCtxMenu [model]="weekMenuItems()" styleClass="ca-ctx-menu" appendTo="body" />
+<p-contextMenu #empCtxMenu  [model]="empMenuItems()"  styleClass="ca-ctx-menu" appendTo="body" />
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 1: Nueva asignación de curva                                        -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<opera-dialog
+  [(visible)]="showAssignment"
+  [header]="modalTitle"
+  width="840px">
+
+  <div class="modal-assignment">
+    <!-- Panel izquierdo: lista de curvas -->
+    <div class="assign-curves-panel">
+      <div class="panel-label">Seleccionar Curva</div>
+      <p-listbox
+        [options]="curveSelectOpts()"
+        [filter]="true"
+        filterPlaceholder="Buscar curva..."
+        optionLabel="name_Curve"
+        [ngModel]="selectedCurve()"
+        (ngModelChange)="onSelectCurve($event)"
+        styleClass="ca-listbox">
+        <ng-template let-c pTemplate="item">
+          <div class="curve-item">
+            <span class="ci-name">{{ c.name_Curve }}</span>
+            <span class="ci-code">{{ c.code }} · {{ c.canti_Semanas }} sem.</span>
+          </div>
+        </ng-template>
+      </p-listbox>
+    </div>
+
+    <!-- Panel derecho: formulario -->
+    <div class="assign-form-panel" [formGroup]="assignmentForm">
+      <!-- Empleado (readonly) -->
+      <div class="form-field">
+        <label>Empleado</label>
+        <input pInputText formControlName="employee_Code" [readonly]="true" />
+      </div>
+
+      <!-- Área -->
+      <div class="form-field">
+        <label>Área *</label>
+        <p-select
+          formControlName="area_AlphaNumId"
+          [options]="filterOpts()?.areaModalOpts ?? areaFilterOpts()"
+          optionLabel="description"
+          optionValue="valueKey"
+          placeholder="Seleccionar área"
+          appendTo="body"
+          styleClass="w-full">
+        </p-select>
+      </div>
+
+      <!-- Tipo de curva -->
+      <div class="form-field">
+        <label>Tipo</label>
+        <p-select
+          formControlName="curveTypeCode"
+          [options]="curveTypes"
+          optionLabel="curveTypeDescription"
+          optionValue="curveTypeCode"
+          appendTo="body"
+          styleClass="w-full">
+        </p-select>
+      </div>
+
+      <!-- Fecha asignación -->
+      <div class="form-field">
+        <label>Fecha Inicio</label>
+        <p-datepicker
+          formControlName="date_Assignment"
+          dateFormat="dd/mm/yy"
+          appendTo="body"
+          styleClass="w-full">
+        </p-datepicker>
+      </div>
+
+      <!-- Semana inicial -->
+      <div class="form-field">
+        <label>Semana Inicial *</label>
+        <p-inputNumber
+          formControlName="initialWeek"
+          [min]="1" [max]="52"
+          [readonly]="isInitialWeekReadonly()"
+          styleClass="w-full">
+        </p-inputNumber>
+      </div>
+
+      <!-- Duración (readonly, de la curva) -->
+      <div class="form-field">
+        <label>Duración (semanas)</label>
+        <p-inputNumber formControlName="duration" [readonly]="true" styleClass="w-full" />
+      </div>
+
+      <!-- Semana final (auto) -->
+      <div class="form-field">
+        <label>Semana Final</label>
+        <p-inputNumber formControlName="finalWeek" [readonly]="true" styleClass="w-full" />
+      </div>
+
+      <!-- Nivel inicial -->
+      @if (selectedCurve()?.selectedWeeks?.length) {
+        <div class="form-field form-field--full">
+          <label>Nivel de inicio</label>
+          <div class="level-radios">
+            @for (sw of selectedCurve()!.selectedWeeks; track sw.level) {
+              <label class="radio-level">
+                <p-radioButton
+                  name="lvlStart"
+                  [value]="sw.level"
+                  formControlName="lvlStart">
+                </p-radioButton>
+                Nivel {{ sw.level }} ({{ sw.target_Efficiency }}%)
+              </label>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Comentarios -->
+      <div class="form-field form-field--full">
+        <label>Comentarios</label>
+        <textarea pTextarea formControlName="comments" rows="2" class="w-full"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div footer class="flex gap-2 justify-end">
+    <button class="btn-secondary" (click)="showAssignment.set(false)">Cancelar</button>
+    <button class="btn-primary" [disabled]="saving()" (click)="onSaveAssignment()">
+      @if (saving()) { <i class="pi pi-spin pi-spinner"></i> }
+      Asignar
+    </button>
+  </div>
+</opera-dialog>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 2: Administrar semanas                                               -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<opera-dialog
+  [(visible)]="showManageWeeks"
+  [header]="modalTitle"
+  width="900px">
+
+  <div class="modal-manage-weeks">
+    <div class="mw-info">
+      <span><strong>Curva:</strong> {{ selectedAssignment()?.curve_Name }}</span>
+      <span><strong>Semanas:</strong> {{ selectedAssignment()?.initialWeek }} → {{ selectedAssignment()?.finalWeek }}</span>
+      <span><strong>Estado:</strong> {{ selectedAssignment()?.statePeriod }}</span>
+    </div>
+
+    <table class="mw-table">
       <thead>
         <tr>
-          <th class="col-employee">Operario</th>
-          <th class="col-curve">Curva</th>
-          <th class="col-status">Estado</th>
-          @for (week of timelineWeeks(); track week) {
-            <th class="col-week">S{{ week }}</th>
-          }
-          <th class="col-actions"></th>
+          <th>#</th>
+          <th>Semana</th>
+          <th>Nivel</th>
+          <th>Efic. Objetivo</th>
+          <th>Horas Base</th>
+          <th>Estado</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
-        @for (emp of filteredEmployees(); track emp.employee_Code) {
-          <tr>
-            <td class="col-employee">
-              <div class="employee-name">{{ emp.employee_Name }}</div>
-              <div class="employee-code text-muted-color">{{ emp.employee_Code }}</div>
+        @for (ew of editableWeeks(); track $index) {
+          <tr [class.week-canceled]="ew.weekState === 'canceled'">
+            <td>{{ $index + 1 }}</td>
+            <td>{{ ew.assignment_Week }}</td>
+            <td>{{ ew.curve_Level }}</td>
+            <td>{{ ew.target_Efficiency }}%</td>
+            <td>{{ ew.base_Hours }}h</td>
+            <td>
+              <span class="week-state-badge ws-{{ ew.weekState }}">{{ ew.weekState }}</span>
             </td>
-            <td class="col-curve">
-              <span class="text-sm font-medium">{{ emp.curve_Code }}</span>
-              @if (emp.curve_Version) {
-                <span class="text-xs text-muted-color ml-1">v{{ emp.curve_Version }}</span>
+            <td>
+              @if (ew.weekState !== 'canceled') {
+                <button class="btn-icon" (click)="removeEditableWeek($index)" pTooltip="Cancelar semana">
+                  <i class="pi pi-times"></i>
+                </button>
+              } @else {
+                <button class="btn-icon btn-icon--restore" (click)="restoreEditableWeek($index)" pTooltip="Restaurar">
+                  <i class="pi pi-undo"></i>
+                </button>
               }
-            </td>
-            <td class="col-status">
-              <span [class]="'status-badge ' + emp.statePeriod">{{ emp.statePeriod }}</span>
-            </td>
-            @for (week of timelineWeeks(); track week) {
-              @let weekData = getWeekForEmployee(emp, week);
-              <td
-                class="col-week"
-                [class.week-empty]="!weekData"
-                (contextmenu)="weekData && onWeekRightClick($event, emp, weekData)"
-              >
-                @if (weekData) {
-                  <div
-                    [class]="'week-cell ' + weekData.assignment_Progress"
-                    [title]="weekData.assignment_Progress + ' — ' + (weekData.real_Efficiency ?? 0) + '%'"
-                  >
-                    {{ weekData.real_Efficiency != null ? (weekData.real_Efficiency + '%') : '—' }}
-                  </div>
-                }
-              </td>
-            }
-            <td class="col-actions">
-              <div class="flex gap-1">
-                <p-button
-                  icon="pi pi-calendar"
-                  [text]="true" [rounded]="true" size="small"
-                  pTooltip="Gestionar semanas" tooltipPosition="top"
-                  (onClick)="openManageWeeks(emp)"
-                />
-                <p-button
-                  icon="pi pi-trash"
-                  severity="danger"
-                  [text]="true" [rounded]="true" size="small"
-                  pTooltip="Eliminar asignación" tooltipPosition="top"
-                  (onClick)="openDelete(emp)"
-                />
-              </div>
-            </td>
-          </tr>
-        }
-
-        @if (filteredEmployees().length === 0) {
-          <tr>
-            <td [attr.colspan]="3 + timelineWeeks().length + 1" class="text-center py-8 text-muted-color">
-              <i class="pi pi-inbox text-3xl mb-2 block opacity-30"></i>
-              Sin asignaciones en este período
             </td>
           </tr>
         }
@@ -113,144 +649,214 @@
     </table>
   </div>
 
-  } <!-- end @else -->
-
-</div><!-- /page-card -->
-
-<!-- ── Modales (fuera del card, dentro del componente) ──────────────────────── -->
-
-<!-- Modal: Nueva Asignación ─────────────────────────────────────────────────── -->
-<opera-dialog
-  [(visible)]="showAssignment"
-  header="Nueva Asignación de Curva"
-  width="480px"
->
-  <form [formGroup]="assignmentForm" class="flex flex-col gap-3 py-2">
-    <div>
-      <label class="block text-sm font-medium mb-1">Código empleado *</label>
-      <input pInputText formControlName="employee_Code" class="w-full" />
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1">Código curva *</label>
-      <input pInputText formControlName="curve_Code" class="w-full" />
-    </div>
-    <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="block text-sm font-medium mb-1">Semana inicial *</label>
-        <p-inputNumber formControlName="initialWeek" [min]="1" [max]="52" styleClass="w-full" />
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Nivel inicial *</label>
-        <p-inputNumber formControlName="lvlStart" [min]="1" styleClass="w-full" />
-      </div>
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1">Observaciones</label>
-      <textarea pTextarea formControlName="comments" class="w-full" rows="3"></textarea>
-    </div>
-  </form>
-
-  <div footer class="flex justify-end gap-2 pt-2">
-    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showAssignment.set(false)" />
-    <p-button label="Crear asignación" [loading]="saving()" (onClick)="onSaveAssignment()" />
+  <div footer class="flex gap-2 justify-end">
+    <button class="btn-secondary" (click)="showManageWeeks.set(false)">Cerrar</button>
+    <button class="btn-primary" [disabled]="saving()" (click)="onSaveWeeksConfig()">
+      @if (saving()) { <i class="pi pi-spin pi-spinner"></i> }
+      Guardar Cambios
+    </button>
   </div>
 </opera-dialog>
 
-<!-- Modal: Gestionar Semanas ────────────────────────────────────────────────── -->
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 3: Comentario del instructor                                         -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
 <opera-dialog
-  [(visible)]="showManageWeeks"
-  header="Semanas de la Asignación"
-  width="680px"
->
-  @if (selectedEmployee) {
-    <div class="py-2">
-      <p class="text-sm mb-3">
-        <strong>{{ selectedEmployee.employee_Name }}</strong>
-        — Curva: {{ selectedEmployee.curve_Code }}
-      </p>
-      <div class="weeks-detail-grid">
-        @for (week of selectedEmployee.weeks; track week.codeId) {
-          <div class="week-detail-card">
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-semibold text-sm">Semana {{ week.assignment_Week }}</span>
-              <span [class]="'status-badge ' + week.assignment_Progress" style="font-size:0.7rem">
-                {{ week.assignment_Progress }}
-              </span>
-            </div>
-            <div class="text-xs text-muted-color">
-              <span>Ef. base: {{ week.target_Efficiency }}%</span>
-              @if (week.real_Efficiency != null) {
-                <span class="ml-2">Ef. real: {{ week.real_Efficiency }}%</span>
-              }
-            </div>
-          </div>
-        }
+  [(visible)]="showInstructorComment"
+  [header]="modalTitle"
+  width="500px">
+
+  <div class="modal-comment" [formGroup]="commentForm">
+    @if (currentWP()) {
+      <div class="comment-meta">
+        <span><strong>Semana:</strong> {{ currentWP()!.assignment_Week }}</span>
+        <span><strong>Estado:</strong> {{ currentWP()!.assignment_Progress }}</span>
+        <span><strong>Eficiencia:</strong> {{ currentWP()!.target_Efficiency }}% / {{ currentWP()!.real_Efficiency ?? '—' }}%</span>
       </div>
+    }
+    <div class="form-field form-field--full">
+      <label>Comentario del Instructor *</label>
+      <textarea pTextarea formControlName="comment" rows="4" class="w-full"
+        placeholder="Ingrese el comentario sobre el desempeño de esta semana..."></textarea>
+      @if (commentForm.controls.comment.errors?.['minlength']) {
+        <small class="field-error">Mínimo 3 caracteres.</small>
+      }
     </div>
-  }
+  </div>
 
-  <div footer class="flex justify-end pt-2">
-    <p-button label="Cerrar" severity="secondary" (onClick)="showManageWeeks.set(false)" />
+  <div footer class="flex gap-2 justify-end">
+    <button class="btn-secondary" (click)="showInstructorComment.set(false)">Cancelar</button>
+    <button class="btn-primary" [disabled]="saving()" (click)="onSaveComment()">
+      @if (saving()) { <i class="pi pi-spin pi-spinner"></i> }
+      Guardar
+    </button>
   </div>
 </opera-dialog>
 
-<!-- Modal: Comentario Instructor ────────────────────────────────────────────── -->
-<opera-dialog
-  [(visible)]="showComment"
-  header="Comentario del Instructor"
-  width="420px"
->
-  <form [formGroup]="commentForm" class="py-2">
-    <label class="block text-sm font-medium mb-1">Comentario *</label>
-    <textarea pTextarea formControlName="comment" class="w-full" rows="4"></textarea>
-  </form>
 
-  <div footer class="flex justify-end gap-2 pt-2">
-    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showComment.set(false)" />
-    <p-button label="Guardar comentario" [loading]="saving()" (onClick)="onSaveComment()" />
-  </div>
-</opera-dialog>
-
-<!-- Modal: Cambiar Estado Semana ────────────────────────────────────────────── -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 4: Semanas solicitadas (read-only)                                  -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
 <opera-dialog
-  [(visible)]="showChangeStatus"
-  header="Cambiar Estado de Semana"
-  width="360px"
->
-  <div class="flex flex-col gap-2 py-2">
-    @for (status of weekStatusOptions; track status) {
-      <p-button
-        [label]="status"
-        severity="secondary"
-        styleClass="w-full justify-start"
-        [class]="'status-badge ' + status"
-        (onClick)="onChangeWeekStatus(status)"
-      />
+  [(visible)]="showRequestedWeeks"
+  [header]="modalTitle"
+  width="640px">
+
+  <div class="modal-requested">
+    @if (selectedAssignment()?.requestedWeeks?.length) {
+      <table class="mw-table">
+        <thead>
+          <tr>
+            <th>Semana</th>
+            <th>Nivel</th>
+            <th>Estado Solicitud</th>
+            <th>Instructor</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (rw of selectedAssignment()!.requestedWeeks; track rw.codeId) {
+            <tr>
+              <td>{{ rw.assignment_Week }}</td>
+              <td>{{ rw.curve_Level }}</td>
+              <td><span class="week-state-badge ws-{{ rw.request_Status }}">{{ rw.request_Status }}</span></td>
+              <td>{{ rw.trainer_Name }}</td>
+              <td>{{ rw.creation_Date }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <div class="empty-state">
+        <i class="pi pi-inbox"></i>
+        <span>No hay semanas solicitadas.</span>
+      </div>
     }
   </div>
 
-  <div footer class="flex justify-end pt-2">
-    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showChangeStatus.set(false)" />
+  <div footer class="flex justify-end">
+    <button class="btn-secondary" (click)="showRequestedWeeks.set(false)">Cerrar</button>
   </div>
 </opera-dialog>
 
-<!-- Modal: Eliminar Asignación ──────────────────────────────────────────────── -->
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 5: Asignar/cambiar instructor                                        -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<opera-dialog
+  [(visible)]="showInstructor"
+  [header]="modalTitle"
+  width="480px">
+
+  <div class="modal-instructor" [formGroup]="instructorForm">
+    @if (instructorDialogRow()) {
+      <div class="emp-card">
+        <div class="ec-name">{{ instructorDialogRow()!.employee_Name }}</div>
+        <div class="ec-code">{{ instructorDialogRow()!.employee_Code }} | {{ instructorDialogRow()!.userCategory_Name }}</div>
+        @if (instructorDialogRow()!.hasInstructor) {
+          <div class="ec-current">
+            Instructor actual: <strong>{{ instructorDialogRow()!.trainer_Name }}</strong>
+          </div>
+        }
+      </div>
+    }
+    <div class="form-field">
+      <label>Instructor</label>
+      <p-select
+        formControlName="trainer_Code"
+        [options]="instructorSelectOpts()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccionar instructor"
+        appendTo="body"
+        styleClass="w-full">
+      </p-select>
+    </div>
+  </div>
+
+  <div footer class="flex gap-2 justify-end">
+    <button class="btn-secondary" (click)="showInstructor.set(false)">Cancelar</button>
+    <button class="btn-primary" [disabled]="saving()" (click)="onSaveInstructor()">
+      @if (saving()) { <i class="pi pi-spin pi-spinner"></i> }
+      Asignar
+    </button>
+  </div>
+</opera-dialog>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 6: Cambiar estado de asignación                                      -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<opera-dialog
+  [(visible)]="showChangeStatus"
+  [header]="modalTitle"
+  width="500px">
+
+  <div class="modal-change-status" [formGroup]="changeStatusForm">
+    @if (selectedAssignment()) {
+      <div class="status-info">
+        <span><strong>Curva:</strong> {{ selectedAssignment()!.curve_Name }}</span>
+        <span><strong>Período:</strong> Sem. {{ selectedAssignment()!.initialWeek }} → {{ selectedAssignment()!.finalWeek }}</span>
+        <span><strong>Estado actual:</strong>
+          <span class="{{ getCurveStatusClass(selectedAssignment()!.statePeriod) }} status-badge">
+            {{ selectedAssignment()!.statePeriod }}
+          </span>
+        </span>
+      </div>
+    }
+    <div class="form-field">
+      <label>Nuevo Estado *</label>
+      <p-select
+        formControlName="newStatePeriod"
+        [options]="statusSelectOpts"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccionar estado"
+        appendTo="body">
+      </p-select>
+      @if (changeStatusForm.get('newStatePeriod')?.invalid && changeStatusForm.get('newStatePeriod')?.touched) {
+        <span class="field-error">Debe seleccionar un estado</span>
+      }
+    </div>
+
+    <div class="form-field form-field--full">
+      <label>Comentario (opcional)</label>
+      <textarea
+        class="pw-form-input"
+        formControlName="comments"
+        rows="4"
+        placeholder="Motivo del cambio de estado..."
+        maxlength="500">
+      </textarea>
+    </div>
+  </div>
+
+  <div footer class="flex justify-end gap-2">
+    <p-button label="Cancelar" [outlined]="true" size="small" (onClick)="showChangeStatus.set(false)" />
+    <p-button label="Actualizar" size="small" [loading]="saving()" (onClick)="onSaveChangeStatus()" />
+  </div>
+
+</opera-dialog>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 7: Confirmar eliminación de curva                                   -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
 <opera-dialog
   [(visible)]="showDelete"
-  header="Eliminar Asignación"
-  width="380px"
->
-  @if (selectedEmployee) {
-    <p class="py-2">
-      ¿Eliminar la asignación de <strong>{{ selectedEmployee.employee_Name }}</strong>?
-      Esta acción no se puede deshacer.
-    </p>
-  }
+  header="Eliminar Curva"
+  width="420px">
 
-  <div footer class="flex justify-end gap-2 pt-2">
-    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showDelete.set(false)" />
-    <p-button label="Eliminar" severity="danger" [loading]="saving()" (onClick)="onConfirmDelete()" />
+  <div class="modal-delete">
+    <div class="delete-icon"><i class="pi pi-exclamation-triangle"></i></div>
+    <p class="delete-msg">¿Estás seguro de eliminar esta asignación de curva?</p>
+    <p class="delete-warning">Esta acción no se puede deshacer.</p>
   </div>
+
+  <div footer class="flex justify-end gap-2">
+    <p-button label="Cancelar" [outlined]="true" size="small" (onClick)="showDelete.set(false)" />
+    <p-button label="Eliminar" severity="danger" size="small" [loading]="saving()" (onClick)="onConfirmDelete()" />
+  </div>
+
 </opera-dialog>
 
-</div><!-- /opera-curve-assignment -->

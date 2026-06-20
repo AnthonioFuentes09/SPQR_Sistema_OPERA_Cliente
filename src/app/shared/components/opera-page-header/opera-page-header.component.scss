@@ -75,6 +75,14 @@
   margin: 0;
 }
 
+// ── Lado derecho (búsqueda + toggle) ─────────────────────────────────────────
+.oph-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 // ── Búsqueda ──────────────────────────────────────────────────────────────────
 .oph-search-wrap {
   position: relative;
@@ -127,4 +135,27 @@
   &:hover { color: #374151; }
 
   i { font-size: 0.7rem; }
+}
+
+// ── Toggle filtros ────────────────────────────────────────────────────────────
+.oph-filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+
+  span {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #374151;
+  }
+}
+
+.oph-filter-checkbox {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: var(--corporate-primary, #003764);
 }

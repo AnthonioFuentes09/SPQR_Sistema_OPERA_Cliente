@@ -72,7 +72,7 @@ export class OperatorsManagementComponent implements OnInit, OnDestroy {
           this._trainingService.getInstructors$(),
         ]),
       );
-      this._operators.set(operators ?? []);
+      this._operators.set(operators.operators ?? []);
       this._instructors.set(instructors ?? []);
     } finally {
       this.loading.set(false);
@@ -81,7 +81,7 @@ export class OperatorsManagementComponent implements OnInit, OnDestroy {
 
   private async _reloadOperators(): Promise<void> {
     const list = await firstValueFrom(this._trainingService.getEmployeesTraining$());
-    this._operators.set(list ?? []);
+    this._operators.set(list.operators ?? []);
   }
 
   // ── Handlers ──────────────────────────────────────────────────────────

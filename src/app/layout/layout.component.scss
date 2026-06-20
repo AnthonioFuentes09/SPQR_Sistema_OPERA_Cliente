@@ -32,8 +32,8 @@ $transition:        0.25s ease;
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   min-width: 0;
+  // NO overflow: hidden aquí — recorta elementos position:fixed (menús, popovers)
 }
 
 .opera-main {
